@@ -119,6 +119,8 @@ export function createApp(database, { sendResetEmail } = {}) {
   app.post('/api/members/password-reset', memberAuth.passwordResetRequestLimiter, memberAuth.requestPasswordReset);
   app.post('/api/members/password-reset/confirm', memberAuth.passwordResetLimiter, memberAuth.resetPassword);
   app.get('/api/members/session', memberAuth.session);
+  app.get('/api/members/rewards', memberAuth.requireMember, memberAuth.memberRewards);
+  app.post('/api/members/rewards/:id/redeem', memberAuth.requireMember, memberAuth.requireCsrf, memberAuth.redeemMemberReward);
   app.post('/api/members/logout', memberAuth.requireMemberSession, memberAuth.requireCsrf, memberAuth.logout);
   app.post('/api/members/appeals', memberAuth.requireMemberSession, memberAuth.requireBannedMember, memberAuth.requireCsrf, memberAuth.submitAppeal);
   app.put('/api/members/profile', memberAuth.requireMember, memberAuth.requireCsrf, memberAuth.updateProfile);
@@ -250,7 +252,8 @@ export function createApp(database, { sendResetEmail } = {}) {
     const members = database.prepare(`
       SELECT members.id, members.display_name AS displayName, members.email, members.role,
         members.active, members.created_at AS createdAt,
-        CAST(COALESCE(SUM(CASE WHEN reservations.status = 'completed' THEN reservations.total_cents ELSE 0 END), 0) / 10 AS INTEGER) AS points
+        MAX(0, CAST(COALESCE(SUM(CASE WHEN reservations.status = 'completed' THEN reservations.total_cents ELSE 0 END), 0) / 10 AS INTEGER)
+          - COALESCE((SELECT SUM(points_cost) FROM member_reward_redemptions WHERE member_id = members.id), 0)) AS points
       FROM members
       LEFT JOIN reservations ON reservations.member_id = members.id
       GROUP BY members.id
@@ -258,6 +261,9 @@ export function createApp(database, { sendResetEmail } = {}) {
     `).all();
     response.json({ members });
   });
+  app.get('/api/admin/rewards', auth.requireStaff, auth.requireAdministrator, memberAuth.listRewardsForAdmin);
+  app.post('/api/admin/rewards', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, memberAuth.createReward);
+  app.put('/api/admin/rewards/:id', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, memberAuth.updateReward);
   app.put('/api/admin/members/:id/role', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, (request, response) => {
     const id = Number(request.params.id);
     const roles = ['user', 'moderator', 'administrator'];

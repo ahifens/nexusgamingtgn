@@ -1,5 +1,5 @@
 import { listPublishedNews } from './news.js';
-import { approvedIdeas, topSpenders } from './member-accounts.js';
+import { approvedIdeas, availableMemberRewards, topSpenders } from './member-accounts.js';
 
 function dateInMadrid(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -81,6 +81,7 @@ export function getPublicData(database) {
     leaderboard,
     news: listPublishedNews(database),
     topSpenders: topSpenders(database),
+    rewards: availableMemberRewards(database),
     ideas: approvedIdeas(database),
   };
 }

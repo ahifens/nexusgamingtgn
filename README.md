@@ -40,6 +40,8 @@ Las cuentas de miembros usan cookies técnicas `HttpOnly`, `SameSite=Strict` y `
 
 Para habilitar el restablecimiento de contraseñas de miembros, configura `PUBLIC_BASE_URL` y las variables SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` y `SMTP_FROM`). En producción, `PUBLIC_BASE_URL` debe usar HTTPS. El enlace enviado caduca en una hora y solo se puede utilizar una vez; al cambiar la contraseña se cierran las sesiones existentes.
 
+Las cuentas acumulan 10 puntos por cada euro de reservas completadas. En Comunidad pueden canjearlos al instante por recompensas del catálogo; cada canje descuenta puntos, reduce el stock y genera un código personal para presentar en el local. El catálogo inicial incluye ejemplos editables desde la pestaña «Recompensas» del panel de administración. Los puntos disponibles nunca bajan de cero.
+
 Para crear un administrador aleatorio, ejecuta `npm run admin:create` y guarda las credenciales que imprime: la contraseña no se almacena en claro y no puede recuperarse después. También puedes configurar `ADMIN_USERNAME` y `ADMIN_PASSWORD` en `.env` y ejecutar `npm run db:setup`; exige 12 caracteres o más. En desarrollo se permite `admin/admin` solo como clave bootstrap, con cambio obligatorio en el primer acceso; no se permite en producción. El hash se genera con bcrypt y la sesión utiliza cookies `httpOnly` más token CSRF. En producción, sirve el sitio exclusivamente por HTTPS.
 
 ## Datos de demostración
@@ -74,6 +76,8 @@ Registro público con nombre, email único, contraseña de al menos 12 caractere
 
 `POST /api/members/password-reset` solicita un enlace por email y `POST /api/members/password-reset/confirm` lo canjea por una contraseña nueva. La respuesta de solicitud no revela si el email está registrado; el token se almacena como hash, caduca en una hora y solo se puede utilizar una vez.
 
+`GET /api/members/rewards` devuelve el saldo, las recompensas disponibles y los últimos canjes. `POST /api/members/rewards/:id/redeem` canjea una recompensa de forma inmediata y requiere sesión y CSRF.
+
 ### `POST /api/members/ideas`, `GET /api/members/ideas`, `PATCH /api/members/ideas/:id`
 
 Los miembros autenticados pueden proponer ideas; solo se publican tras aprobación. `moderator` y `administrator` pueden revisar la cola. El rol `administrator` se asigna desde el panel staff.
@@ -89,6 +93,8 @@ Login de personal, consulta de sesión y cierre. Las mutaciones del panel requie
 ### `GET|POST /api/admin/news`, `PUT|DELETE /api/admin/news/:id`
 
 Listado para personal y gestión de noticias. Crear, editar y eliminar requiere rol `administrator`; el contenido puede mantenerse en borrador o publicarse. Las imágenes deben usar HTTPS.
+
+`GET|POST /api/admin/rewards`, `PUT /api/admin/rewards/:id` permite a administradores gestionar el catálogo, los costes en puntos, el stock y su disponibilidad.
 
 ### `GET|POST /api/admin/tournaments`, `PUT|DELETE /api/admin/tournaments/:id`, `GET /api/admin/tournaments/:id/entries`, `POST /api/admin/tournaments/:id/results`
 

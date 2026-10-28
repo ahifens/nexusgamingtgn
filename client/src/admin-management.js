@@ -44,11 +44,15 @@ export function setupAdminManagement({ csrfToken, role }) {
   const tournamentList = document.querySelector('#admin-tournament-list');
   const reservationsList = document.querySelector('#admin-reservation-list');
   const membersList = document.querySelector('#admin-member-list');
+  const rewardsList = document.querySelector('#admin-reward-list');
+  const rewardForm = document.querySelector('#reward-form');
+  const rewardMessage = document.querySelector('#reward-message');
   const ideasList = document.querySelector('#admin-idea-list');
   let editingTournamentId = null;
+  let editingRewardId = null;
 
   if (role !== 'administrator') {
-    tabs.filter((tab) => ['tournaments', 'members'].includes(tab.dataset.adminTab)).forEach((tab) => { tab.hidden = true; });
+    tabs.filter((tab) => ['tournaments', 'members', 'rewards'].includes(tab.dataset.adminTab)).forEach((tab) => { tab.hidden = true; });
   }
 
   async function loadEntries(tournament) {
@@ -322,6 +326,76 @@ export function setupAdminManagement({ csrfToken, role }) {
     }
   }
 
+  function resetRewardForm() {
+    editingRewardId = null;
+    rewardForm.reset();
+    rewardForm.elements.active.value = 'true';
+    document.querySelector('#reward-editor-title').textContent = 'Añadir recompensa';
+    document.querySelector('#reset-reward').hidden = true;
+  }
+
+  async function loadRewards() {
+    rewardsList.replaceChildren(node('p', 'list-loading', 'Cargando recompensas…'));
+    try {
+      const { rewards } = await api('/api/admin/rewards');
+      rewardsList.replaceChildren();
+      if (!rewards.length) rewardsList.append(node('p', 'list-empty', 'Todavía no hay recompensas.'));
+      rewards.forEach((reward) => {
+        const row = node('article', 'admin-news-row');
+        const info = node('div', 'admin-news-headline');
+        info.append(
+          node('span', `status-label status-${reward.active ? 'published' : 'draft'}`, reward.active ? 'Activa' : 'Inactiva'),
+          node('h3', '', reward.name),
+          node('p', '', `${reward.pointsCost} puntos · ${reward.stock === null ? 'Stock ilimitado' : `${reward.stock} disponibles`}`),
+        );
+        if (reward.description) info.append(node('p', '', reward.description));
+        const actions = node('div', 'admin-news-actions');
+        const edit = node('button', 'news-action', 'Editar');
+        edit.type = 'button';
+        edit.addEventListener('click', () => {
+          editingRewardId = reward.id;
+          rewardForm.elements.name.value = reward.name;
+          rewardForm.elements.description.value = reward.description;
+          rewardForm.elements.pointsCost.value = String(reward.pointsCost);
+          rewardForm.elements.stock.value = reward.stock === null ? '' : String(reward.stock);
+          rewardForm.elements.active.value = String(reward.active);
+          document.querySelector('#reward-editor-title').textContent = 'Editar recompensa';
+          document.querySelector('#reset-reward').hidden = false;
+          rewardForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        actions.append(edit);
+        row.append(info, actions);
+        rewardsList.append(row);
+      });
+    } catch (error) {
+      rewardsList.replaceChildren(node('p', 'list-empty', error.message));
+    }
+  }
+
+  rewardForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    rewardMessage.textContent = 'Guardando recompensa…';
+    const values = Object.fromEntries(new FormData(rewardForm).entries());
+    const body = {
+      name: values.name,
+      description: values.description,
+      pointsCost: Number(values.pointsCost),
+      stock: values.stock === '' ? null : Number(values.stock),
+      active: values.active === 'true',
+    };
+    try {
+      const method = editingRewardId ? 'PUT' : 'POST';
+      const path = editingRewardId ? `/api/admin/rewards/${editingRewardId}` : '/api/admin/rewards';
+      await api(path, { method, body, csrfToken });
+      rewardMessage.textContent = 'Recompensa guardada.';
+      resetRewardForm();
+      await loadRewards();
+    } catch (error) {
+      rewardMessage.textContent = error.message;
+    }
+  });
+  document.querySelector('#reset-reward').addEventListener('click', resetRewardForm);
+
   async function loadIdeas() {
     ideasList.replaceChildren(node('p', 'list-loading', 'Cargando ideas y apelaciones…'));
     try {
@@ -421,10 +495,12 @@ export function setupAdminManagement({ csrfToken, role }) {
       if (tab.dataset.adminTab === 'tournaments') loadTournaments();
       if (tab.dataset.adminTab === 'reservations') loadReservations();
       if (tab.dataset.adminTab === 'members') loadMembers();
+      if (tab.dataset.adminTab === 'rewards') loadRewards();
       if (tab.dataset.adminTab === 'ideas') loadIdeas();
     });
   });
   document.querySelector('#refresh-reservations').addEventListener('click', loadReservations);
   document.querySelector('#refresh-members').addEventListener('click', loadMembers);
+  document.querySelector('#refresh-rewards').addEventListener('click', loadRewards);
   document.querySelector('#refresh-ideas').addEventListener('click', loadIdeas);
 }

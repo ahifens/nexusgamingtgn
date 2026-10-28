@@ -615,6 +615,20 @@ function renderCommunity(data) {
   profile.append(ideaForm);
   account.append(authView, profile);
 
+  const rewardsSection = el('section', 'member-rewards');
+  rewardsSection.append(
+    el('div', 'community-heading', ''),
+    el('h3', '', 'Canjear puntos'),
+    el('p', 'member-rewards-note', 'Los puntos se descuentan al instante y recibirás un código para presentar en el local.'),
+  );
+  rewardsSection.querySelector('.community-heading').append(
+    el('p', 'eyebrow', 'RECOMPENSAS'),
+  );
+  const rewardsList = el('div', 'member-rewards-list');
+  const redemptionHistory = el('div', 'member-redemption-history');
+  rewardsSection.append(rewardsList, el('h4', '', 'Mis canjes'), redemptionHistory);
+  account.append(rewardsSection);
+
   const top = el('aside', 'community-top-panel');
   top.append(el('p', 'eyebrow', 'PUNTOS POR GASTO'), el('h2', '', 'Top 10')); 
   const topCaption = el('p', 'community-top-caption', '10 puntos por euro en reservas completadas.');
@@ -639,6 +653,80 @@ function renderCommunity(data) {
   main.append(section);
 
   let csrfToken = '';
+  let memberPoints = null;
+  const renderRewards = (rewards) => {
+    rewardsList.replaceChildren();
+    if (!rewards.length) {
+      rewardsList.append(el('p', 'rank-empty', 'No hay recompensas disponibles ahora mismo.'));
+      return;
+    }
+    rewards.forEach((reward) => {
+      const card = el('article', 'member-reward-card');
+      const details = el('div', 'member-reward-details');
+      details.append(
+        el('h4', '', reward.name),
+        el('p', '', reward.description || 'Canjea puntos para obtener esta recompensa.'),
+      );
+      if (reward.stock !== null) details.append(el('small', '', `${reward.stock} disponibles`));
+      const action = el('div', 'member-reward-action');
+      action.append(el('strong', '', `${reward.pointsCost} puntos`));
+      const redeem = el('button', 'button button-dark', memberPoints === null ? 'Inicia sesión' : 'Canjear');
+      redeem.type = 'button';
+      redeem.disabled = memberPoints === null || memberPoints < reward.pointsCost;
+      if (memberPoints !== null && memberPoints < reward.pointsCost) {
+        redeem.textContent = `Te faltan ${reward.pointsCost - memberPoints}`;
+      }
+      redeem.addEventListener('click', async () => {
+        if (!confirm(`¿Canjear "${reward.name}" por ${reward.pointsCost} puntos? El descuento de puntos es inmediato.`)) return;
+        redeem.disabled = true;
+        try {
+          const response = await fetch(`/api/members/rewards/${reward.id}/redeem`, {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken },
+            credentials: 'same-origin',
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error ?? 'No se pudo canjear la recompensa.');
+          memberPoints = result.points;
+          document.querySelector('#member-points').textContent = String(memberPoints);
+          await loadMemberRewards();
+        } catch (error) {
+          redemptionHistory.replaceChildren(el('p', 'form-message', error.message));
+          redeem.disabled = false;
+        }
+      });
+      action.append(redeem);
+      card.append(details, action);
+      rewardsList.append(card);
+    });
+  };
+  const renderRedemptions = (redemptions) => {
+    redemptionHistory.replaceChildren();
+    if (!redemptions.length) {
+      redemptionHistory.append(el('p', 'rank-empty', 'Aún no has canjeado puntos.'));
+      return;
+    }
+    redemptions.forEach((redemption) => {
+      const item = el('article', 'member-redemption');
+      item.append(
+        el('strong', '', redemption.rewardName),
+        el('span', '', `${redemption.pointsCost} puntos · Código ${redemption.redemptionCode}`),
+        el('small', '', 'Presenta este código al personal para recibir tu premio.'),
+      );
+      redemptionHistory.append(item);
+    });
+  };
+  const loadMemberRewards = async () => {
+    const response = await fetch('/api/members/rewards', { credentials: 'same-origin' });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error ?? 'No se pudieron cargar las recompensas.');
+    memberPoints = result.points;
+    document.querySelector('#member-points').textContent = String(memberPoints);
+    renderRewards(result.rewards);
+    renderRedemptions(result.redemptions);
+  };
+  renderRewards(data.rewards ?? []);
+  renderRedemptions([]);
   const resetTokenFromUrl = new URLSearchParams(window.location.search).get('resetToken');
   const setAuthTab = (register) => {
     authTabs.hidden = false;
@@ -763,6 +851,7 @@ function renderCommunity(data) {
       if (!response.ok) throw new Error(result.error ?? 'No se pudo iniciar sesión.');
       csrfToken = result.csrfToken;
       showMember(result.member);
+      await loadMemberRewards();
       await syncMemberAccessLink(document.querySelector('.nav-account'));
     } catch (error) {
       message.textContent = error.message;
@@ -786,6 +875,7 @@ function renderCommunity(data) {
       if (!response.ok) throw new Error(result.error ?? 'No se pudo crear la cuenta.');
       csrfToken = result.csrfToken;
       showMember(result.member);
+      await loadMemberRewards();
       await syncMemberAccessLink(document.querySelector('.nav-account'));
     } catch (error) {
       message.textContent = error.message;
@@ -877,6 +967,9 @@ function renderCommunity(data) {
       profile.hidden = true;
       ideaForm.hidden = true;
       authView.hidden = false;
+      memberPoints = null;
+      renderRewards(data.rewards ?? []);
+      renderRedemptions([]);
       await syncMemberAccessLink(document.querySelector('.nav-account'));
     }
   });
@@ -887,6 +980,7 @@ function renderCommunity(data) {
       const result = await response.json();
       csrfToken = result.csrfToken;
       showMember(result.member);
+      await loadMemberRewards();
     }).catch(() => {});
   }
 }

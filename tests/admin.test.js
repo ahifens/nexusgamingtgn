@@ -148,6 +148,26 @@ describe('panel de noticias', () => {
     });
     const staffCookie = staffLogin.response.headers.getSetCookie().map((value) => value.split(';')[0]).join('; ');
     const staffCsrf = staffLogin.data.csrfToken;
+    const rewards = await jsonRequest('/api/admin/rewards', { cookie: staffCookie });
+    expect(rewards.data.rewards.length).toBeGreaterThanOrEqual(3);
+    const reward = await jsonRequest('/api/admin/rewards', {
+      method: 'POST',
+      cookie: staffCookie,
+      csrfToken: staffCsrf,
+      body: { name: 'Premio de prueba', description: 'Premio editable', pointsCost: 100, stock: 3, active: true },
+    });
+    expect(reward.response.status).toBe(201);
+    const updatedReward = await jsonRequest(`/api/admin/rewards/${reward.data.id}`, {
+      method: 'PUT',
+      cookie: staffCookie,
+      csrfToken: staffCsrf,
+      body: { name: 'Premio actualizado', description: '', pointsCost: 120, stock: null, active: false },
+    });
+    expect(updatedReward.response.status).toBe(200);
+    const refreshedRewards = await jsonRequest('/api/admin/rewards', { cookie: staffCookie });
+    expect(refreshedRewards.data.rewards).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: reward.data.id, name: 'Premio actualizado', pointsCost: 120, stock: null, active: false }),
+    ]));
     const listed = await jsonRequest('/api/admin/reservations', { cookie: staffCookie });
     const storedReservation = listed.data.reservations.find((item) => item.code === reservation.data.code);
 

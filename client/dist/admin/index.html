@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/assets/admin-pHHW_1V_.js"></script>
+    <script type="module" crossorigin src="/assets/admin-N2MxVND5.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/member-gate-DgHoeoq-.js">
     <link rel="stylesheet" crossorigin href="/assets/member-gate-BMkph4Lr.css">
     <link rel="stylesheet" crossorigin href="/assets/admin-C1bwub8c.css">
@@ -55,6 +55,7 @@
           <button role="tab" id="tab-tournaments" aria-controls="panel-tournaments" aria-selected="false" data-admin-tab="tournaments">Torneos</button>
           <button role="tab" id="tab-reservations" aria-controls="panel-reservations" aria-selected="false" data-admin-tab="reservations">Reservas</button>
           <button role="tab" id="tab-members" aria-controls="panel-members" aria-selected="false" data-admin-tab="members">Cuentas y roles</button>
+          <button role="tab" id="tab-rewards" aria-controls="panel-rewards" aria-selected="false" data-admin-tab="rewards">Recompensas</button>
           <button role="tab" id="tab-ideas" aria-controls="panel-ideas" aria-selected="false" data-admin-tab="ideas">Ideas del staff</button>
         </nav>
         <section id="panel-news" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-news">
@@ -103,6 +104,22 @@
           <div class="panel-heading"><div><p class="admin-eyebrow">CUENTAS DE LA COMUNIDAD</p><h2>Usuarios y roles</h2></div><button id="refresh-members" class="admin-button admin-button-quiet" type="button">Actualizar</button></div>
           <p class="access-note">Los registros nuevos reciben el rol user. Asigna moderator para revisar ideas o administrator para gestionar moderadores.</p>
           <div id="admin-member-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando cuentas…</p></div>
+        </section>
+        <section id="panel-rewards" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-rewards" hidden>
+          <div class="panel-heading"><div><p class="admin-eyebrow">FIDELIZACIÓN</p><h2>Catálogo de recompensas</h2></div><button id="refresh-rewards" class="admin-button admin-button-quiet" type="button">Actualizar</button></div>
+          <p class="access-note">Los canjes descuentan los puntos al instante y generan un código que el miembro presenta en el local. Deja el stock vacío para que no tenga límite; desactiva un premio para retirarlo sin borrar el historial.</p>
+          <div class="tournament-admin-grid">
+            <form id="reward-form" class="admin-form news-form">
+              <h3 id="reward-editor-title">Añadir recompensa</h3>
+              <label>Nombre<input name="name" type="text" maxlength="100" required /></label>
+              <label>Descripción<textarea name="description" rows="3" maxlength="500"></textarea></label>
+              <div class="admin-field-pair"><label>Coste en puntos<input name="pointsCost" type="number" min="1" max="1000000" required /></label><label>Stock · vacío = ilimitado<input name="stock" type="number" min="0" step="1" /></label></div>
+              <label>Estado<select name="active"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
+              <div class="editor-actions"><button class="admin-button admin-button-dark" type="submit">Guardar recompensa</button><button id="reset-reward" class="admin-button admin-button-quiet" type="button" hidden>Cancelar edición</button></div>
+              <p id="reward-message" class="form-message" role="status" aria-live="polite"></p>
+            </form>
+            <div id="admin-reward-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando recompensas…</p></div>
+          </div>
         </section>
         <section id="panel-ideas" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-ideas" hidden>
           <div class="panel-heading"><div><p class="admin-eyebrow">PARTICIPACIÓN</p><h2>Ideas de la comunidad</h2></div><button id="refresh-ideas" class="admin-button admin-button-quiet" type="button">Actualizar</button></div>

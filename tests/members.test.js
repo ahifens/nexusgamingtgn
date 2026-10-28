@@ -328,6 +328,66 @@ describe('cuentas, puntos y sugerencias', () => {
       });
     }
   });
+
+  it('canjea puntos al instante, conserva el historial y evita saldo o stock negativo', async () => {
+    const registration = await request('/api/members/register', {
+      method: 'POST',
+      body: { displayName: 'Cuenta Canje', email: 'canje@example.test', password: 'Clave-segura-1234', consent: true },
+    });
+    const cookie = sessionCookies(registration.response);
+    const booking = await request('/api/reservations', {
+      method: 'POST',
+      cookie,
+      body: {
+        seatType: 'pc-gaming',
+        date: futureDate(),
+        startTime: '12:00',
+        durationHours: 2,
+        customerName: 'Cuenta Canje',
+        customerEmail: 'canje@example.test',
+        customerPhone: '+34600123456',
+        consent: true,
+        website: '',
+      },
+    });
+    expect(booking.response.status).toBe(201);
+    database.prepare("UPDATE reservations SET status = 'completed', total_cents = 5000 WHERE code = ?")
+      .run(booking.data.code);
+
+    const drink = database.prepare("SELECT id FROM member_rewards WHERE name = 'Bebida sin alcohol'").get();
+    database.prepare('UPDATE member_rewards SET stock = 1 WHERE id = ?').run(drink.id);
+    const before = await request('/api/members/rewards', { cookie });
+    expect(before.data.points).toBe(500);
+    expect(before.data.rewards).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: drink.id, pointsCost: 250, stock: 1 }),
+    ]));
+
+    const redemption = await request(`/api/members/rewards/${drink.id}/redeem`, {
+      method: 'POST',
+      cookie,
+      csrfToken: registration.data.csrfToken,
+    });
+    expect(redemption.response.status).toBe(201);
+    expect(redemption.data).toMatchObject({
+      points: 250,
+      redemption: { rewardName: 'Bebida sin alcohol', pointsCost: 250 },
+    });
+    expect(redemption.data.redemption.redemptionCode).toMatch(/^[A-F0-9]{12}$/);
+
+    const after = await request('/api/members/rewards', { cookie });
+    expect(after.data.points).toBe(250);
+    expect(after.data.redemptions).toHaveLength(1);
+    expect(after.data.redemptions[0].redemptionCode).toBe(redemption.data.redemption.redemptionCode);
+
+    const outOfStock = await request(`/api/members/rewards/${drink.id}/redeem`, {
+      method: 'POST',
+      cookie,
+      csrfToken: registration.data.csrfToken,
+    });
+    expect(outOfStock.response.status).toBe(409);
+    expect(database.prepare('SELECT stock FROM member_rewards WHERE id = ?').get(drink.id).stock).toBe(0);
+    expect(database.prepare('SELECT COUNT(*) AS count FROM member_reward_redemptions').get().count).toBe(1);
+  });
 });
 
 function futureDate() {

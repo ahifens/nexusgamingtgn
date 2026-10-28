@@ -46,6 +46,13 @@ const moderationSchema = z.object({
   status: z.enum(['approved', 'rejected']),
   moderationNote: z.string().trim().max(500).default(''),
 });
+const rewardSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  description: z.string().trim().max(500).default(''),
+  pointsCost: z.number().int().min(1).max(1000000),
+  stock: z.number().int().min(0).nullable(),
+  active: z.boolean(),
+});
 const appealSchema = z.object({
   reason: z.string().trim().min(30).max(2000),
 });
@@ -87,13 +94,23 @@ function memberSummary(database, memberId) {
   if (!member) return null;
 
   const stats = database.prepare(`
-    SELECT COALESCE(SUM(total_cents), 0) AS spendCents,
-      CAST(COALESCE(SUM(total_cents), 0) / 10 AS INTEGER) AS points,
+    SELECT COALESCE(SUM(reservations.total_cents), 0) AS spendCents,
+      MAX(0, CAST(COALESCE(SUM(reservations.total_cents), 0) / 10 AS INTEGER)
+        - COALESCE((SELECT SUM(points_cost) FROM member_reward_redemptions WHERE member_id = ?), 0)) AS points,
       COUNT(*) AS completedVisits
     FROM reservations
-    WHERE member_id = ? AND status = 'completed'
-  `).get(memberId);
+    WHERE reservations.member_id = ? AND reservations.status = 'completed'
+  `).get(memberId, memberId);
   return { ...member, ...stats };
+}
+
+export function availableMemberRewards(database) {
+  return database.prepare(`
+    SELECT id, name, description, points_cost AS pointsCost, stock
+    FROM member_rewards
+    WHERE active = 1 AND (stock IS NULL OR stock > 0)
+    ORDER BY points_cost, id
+  `).all();
 }
 
 function setSessionCookies(response, sessionToken, csrfToken, lifetimeMs, remembered = false) {
@@ -123,7 +140,8 @@ function createSession(database, memberId, lifetimeMs = sessionLifetimeMs, remem
 export function topSpenders(database) {
   return database.prepare(`
     SELECT members.id, members.display_name AS displayName,
-      CAST(SUM(reservations.total_cents) / 10 AS INTEGER) AS points,
+      MAX(0, CAST(SUM(reservations.total_cents) / 10 AS INTEGER)
+        - COALESCE((SELECT SUM(points_cost) FROM member_reward_redemptions WHERE member_id = members.id), 0)) AS points,
       COUNT(reservations.id) AS completedVisits
     FROM members
     JOIN reservations ON reservations.member_id = members.id
@@ -350,6 +368,70 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
     });
   }
 
+  function memberRewards(request, response) {
+    const rewards = availableMemberRewards(database);
+    const redemptions = database.prepare(`
+      SELECT id, reward_name AS rewardName, points_cost AS pointsCost,
+        redemption_code AS redemptionCode, created_at AS createdAt
+      FROM member_reward_redemptions
+      WHERE member_id = ?
+      ORDER BY created_at DESC, id DESC
+      LIMIT 20
+    `).all(request.member.memberId);
+    return response.json({ points: memberSummary(database, request.member.memberId).points, rewards, redemptions });
+  }
+
+  function redeemMemberReward(request, response, next) {
+    const rewardId = Number(request.params.id);
+    if (!Number.isSafeInteger(rewardId) || rewardId < 1) {
+      return response.status(400).json({ error: 'Recompensa no válida.' });
+    }
+
+    try {
+      const redeem = database.transaction(() => {
+        const reward = database.prepare(`
+          SELECT id, name, points_cost AS pointsCost, stock
+          FROM member_rewards
+          WHERE id = ? AND active = 1
+        `).get(rewardId);
+        if (!reward) return { error: 'Esta recompensa ya no está disponible.', status: 404 };
+        if (memberSummary(database, request.member.memberId).points < reward.pointsCost) {
+          return { error: 'No tienes suficientes puntos para este canje.', status: 409 };
+        }
+
+        if (reward.stock !== null) {
+          const stockUpdate = database.prepare(`
+            UPDATE member_rewards SET stock = stock - 1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND active = 1 AND stock > 0
+          `).run(reward.id);
+          if (!stockUpdate.changes) return { error: 'Esta recompensa se ha agotado.', status: 409 };
+        }
+
+        const redemptionCode = randomBytes(6).toString('hex').toUpperCase();
+        const result = database.prepare(`
+          INSERT INTO member_reward_redemptions
+            (member_id, reward_id, reward_name, points_cost, redemption_code)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(request.member.memberId, reward.id, reward.name, reward.pointsCost, redemptionCode);
+        return {
+          redemption: {
+            id: result.lastInsertRowid,
+            rewardName: reward.name,
+            pointsCost: reward.pointsCost,
+            redemptionCode,
+          },
+          points: memberSummary(database, request.member.memberId).points,
+        };
+      });
+
+      const result = redeem.immediate();
+      if (result.error) return response.status(result.status).json({ error: result.error });
+      return response.status(201).json(result);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   function logout(request, response) {
     const identity = request.member ?? request.bannedMember;
     database.prepare('DELETE FROM member_sessions WHERE id = ?').run(identity.sessionId);
@@ -541,6 +623,48 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
     return response.json({ id, status: parsed.data.status });
   }
 
+  function listRewardsForAdmin(_request, response) {
+    const rewards = database.prepare(`
+      SELECT id, name, description, points_cost AS pointsCost, stock, active,
+        updated_at AS updatedAt
+      FROM member_rewards
+      ORDER BY active DESC, points_cost, id
+    `).all().map((reward) => ({ ...reward, active: Boolean(reward.active) }));
+    return response.json({ rewards });
+  }
+
+  function createReward(request, response) {
+    const parsed = rewardSchema.safeParse(request.body);
+    if (!parsed.success) return response.status(400).json({ error: 'Revisa el nombre, el coste y el stock de la recompensa.' });
+    const result = database.prepare(`
+      INSERT INTO member_rewards (name, description, points_cost, stock, active)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(parsed.data.name, parsed.data.description, parsed.data.pointsCost, parsed.data.stock, parsed.data.active ? 1 : 0);
+    return response.status(201).json({ id: result.lastInsertRowid });
+  }
+
+  function updateReward(request, response) {
+    const id = Number(request.params.id);
+    const parsed = rewardSchema.safeParse(request.body);
+    if (!Number.isSafeInteger(id) || id < 1 || !parsed.success) {
+      return response.status(400).json({ error: 'Revisa la recompensa y sus datos.' });
+    }
+    const result = database.prepare(`
+      UPDATE member_rewards
+      SET name = ?, description = ?, points_cost = ?, stock = ?, active = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      parsed.data.name,
+      parsed.data.description,
+      parsed.data.pointsCost,
+      parsed.data.stock,
+      parsed.data.active ? 1 : 0,
+      id,
+    );
+    if (!result.changes) return response.status(404).json({ error: 'No encontramos esa recompensa.' });
+    return response.json({ id });
+  }
+
   return {
     loginLimiter,
     registrationLimiter,
@@ -555,6 +679,8 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
     register,
     login,
     session,
+    memberRewards,
+    redeemMemberReward,
     logout,
     submitAppeal,
     updateProfile,
@@ -564,5 +690,8 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
     submitIdea,
     listMemberIdeas,
     moderateIdea,
+    listRewardsForAdmin,
+    createReward,
+    updateReward,
   };
 }
