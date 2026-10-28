@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101210" />
+    <meta name="description" content="PC gaming, consolas, simulador, zona retro y torneos. Encuentra tu setup y reserva en el local." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:title" content="NEXUS — Gaming social" />
+    <meta property="og:description" content="Entra. Juega. Vuelve. PC gaming, consolas, simulador y comunidad." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=85" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>NEXUS — Gaming social</title>
+    <script id="business-schema" type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Nombre del local","description":"Local gaming con puestos de PC, consolas, simulador y zona retro.","address":{"@type":"PostalAddress","streetAddress":"Dirección pendiente","addressCountry":"ES"},"telephone":"+34 000 000 000","email":"contacto@example.test"}</script>
+  </head>
+  <body class="nexus-home auth-checking">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="topbar">
+      <nav class="nav wrap" aria-label="Navegación principal">
+        <a class="brand" href="#inicio" aria-label="Inicio"><span class="brand-mark">N</span><span id="brand-name">NEXUS</span></a>
+        <div class="nav-links" id="navLinks">
+          <a href="#experiencias">El espacio</a>
+          <a href="#noticias">Noticias</a>
+          <a href="#tarifas">Tarifas</a>
+          <a href="#torneos">Torneos</a>
+          <a href="#ranking">Ranking</a>
+          <a href="#comunidad">Comunidad</a>
+          <a href="#ubicacion">Dónde estamos</a>
+          <a class="nav-account" id="member-access-link" href="#comunidad">Entrar / registrarse</a>
+          <a class="button menu-reserve" href="#reservar">Reserva tu puesto <span aria-hidden="true">↗</span></a>
+        </div>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks">☰</button>
+      </nav>
+    </header>
+
+    <main id="contenido">
+      <section class="hero" id="inicio" aria-labelledby="hero-title">
+        <div class="hero-photo" aria-hidden="true"></div>
+        <div class="hero-inner wrap">
+          <div class="hero-copy">
+            <div class="eyebrow" id="hero-location">Gaming social · Tarragona</div>
+            <h1 class="display" id="hero-title">Entra.<br />Juega. <span>Vuelve.</span></h1>
+            <p>Tu próxima partida empieza aquí. PCs gaming, consolas, simulador, zona retro y una comunidad que juega en serio.</p>
+            <div class="hero-actions"><a class="button" href="#reservar">Encuentra tu setup <span aria-hidden="true">↗</span></a><a class="button button-dark" href="#experiencias">Explora el espacio <span aria-hidden="true">↓</span></a></div>
+            <div class="hero-note"><span class="live-dot"></span><span><b>Partidas en marcha</b> · Ven con tu squad</span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="ticker" aria-label="Zonas del local"><div class="ticker-track wrap"><span>PC GAMING</span><span>✳</span><span>CONSOLAS</span><span>✳</span><span>SIMULADOR</span><span>✳</span><span>ZONA RETRO</span><span>✳</span><span>TORNEOS</span></div></div>
+
+      <section id="experiencias">
+        <div class="wrap">
+          <div class="section-head"><div><div class="eyebrow">Tu partida, tus reglas</div><h2 class="display">Elige tu zona</h2></div><p>Un espacio para competir, probar algo nuevo o echar una partida sin mirar el reloj.</p></div>
+          <div class="services-grid" id="services-list" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="noticias">
+        <div class="wrap">
+          <div class="section-head"><div><div class="eyebrow">Lo último de la comunidad</div><h2 class="display">Noticias</h2></div><p>Novedades, próximos eventos y momentos de la comunidad.</p></div>
+          <div class="news-grid" id="newsList" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="rates" id="tarifas">
+        <div class="wrap">
+          <div class="section-head"><div><div class="eyebrow">Sin sorpresas</div><h2 class="display">Tarifas por hora</h2></div><p>Elige tu setup y reserva el tiempo que necesitas.</p></div>
+          <div class="rate-table" id="rateTable" aria-live="polite"></div>
+          <div class="rate-footnote" id="rateFootnote">Tarifas y bonos servidos desde la base de datos.</div>
+        </div>
+      </section>
+
+      <section id="reservar">
+        <div class="wrap split">
+          <div class="booking-intro"><div class="eyebrow">Tu sitio te espera</div><h2 class="display">Reserva tu próxima partida</h2><p>Selecciona zona, día y duración. Comprobamos los puestos disponibles antes de confirmar.</p></div>
+          <div class="booking-stack">
+            <form class="booking-form" id="bookingForm">
+              <div class="form-grid">
+                <div class="field field-wide"><label for="bookingType">Tipo de puesto</label><select id="bookingType" name="seatType" required></select></div>
+                <div class="field"><label for="bookingDate">Día</label><input id="bookingDate" name="date" type="date" required /></div>
+                <div class="field"><label for="bookingTime">Hora de inicio</label><select id="bookingTime" name="startTime" required disabled><option value="">Elige día y duración</option></select></div>
+                <div class="field field-wide"><label for="bookingDuration">Duración</label><select id="bookingDuration" name="durationHours" required><option value="1">1 hora</option><option value="2" selected>2 horas</option><option value="3">3 horas</option><option value="4">4 horas</option><option value="5">5 horas</option><option value="6">6 horas</option></select></div>
+                <div class="field"><label for="bookingName">Tu nombre</label><input id="bookingName" name="customerName" autocomplete="name" placeholder="Nombre" required maxlength="100" /></div>
+                <div class="field"><label for="bookingPhone">Teléfono</label><input id="bookingPhone" name="customerPhone" type="tel" autocomplete="tel" required /></div>
+                <div class="field field-wide"><label for="bookingEmail">Email</label><input id="bookingEmail" name="customerEmail" type="email" autocomplete="email" placeholder="Para confirmar la reserva" required maxlength="254" /></div>
+                <label class="field-wide booking-consent"><input name="consent" type="checkbox" required /><span>Acepto la <a href="/local/#privacidad">información de privacidad</a> para gestionar esta reserva.</span></label>
+                <label class="booking-honeypot" aria-hidden="true">Deja este campo vacío<input name="website" tabindex="-1" autocomplete="off" /></label>
+              </div>
+              <div class="availability" id="availability" role="status" aria-live="polite">Elige día y duración para comprobar disponibilidad.</div>
+              <div class="booking-total">Total <strong id="bookingPrice">—</strong></div>
+              <button class="button booking-confirm" id="bookingSubmit" type="submit" disabled>Comprobar disponibilidad primero</button>
+              <p class="small-note" id="bookingMessage" role="status" aria-live="polite"></p>
+              <div class="booking-confirmation" id="bookingConfirmation" role="status" aria-live="polite" hidden></div>
+            </form>
+            <form class="booking-form cancellation-form" id="cancelBookingForm"><div class="eyebrow">¿No puedes venir?</div><h3 class="display">Cancelar reserva</h3><p class="small-note">Introduce el código y el token que recibiste al confirmar.</p><div class="field"><label for="cancelBookingCode">Código de reserva</label><input id="cancelBookingCode" name="code" autocomplete="off" required /></div><div class="field"><label for="cancelBookingToken">Token de cancelación</label><input id="cancelBookingToken" name="token" autocomplete="off" required /></div><div class="availability" id="cancelBookingStatus" role="status" aria-live="polite">Se aplican las condiciones de antelación indicadas.</div><button class="button button-dark booking-confirm" type="submit">Cancelar reserva</button></form>
+          </div>
+        </div>
+      </section>
+
+      <section class="tournaments" id="torneos">
+        <div class="wrap"><div class="section-head"><div><div class="eyebrow">La próxima partida cuenta</div><h2 class="display">Torneos abiertos</h2></div><p>Apúntate, compite y suma puntos para escalar en la clasificación.</p></div><div class="tournament-list" id="tournamentList" aria-live="polite"></div></div>
+      </section>
+
+      <section id="ranking">
+        <div class="wrap ranking-grid">
+          <div class="ranking-intro"><div class="eyebrow">Cada partida deja huella</div><h2 class="display">El ranking<br />de la casa</h2><p>Puntos acumulados en torneos. Gana rondas, sube posiciones y pon tu gamertag arriba.</p><a class="button button-dark" href="/torneos/">Ver torneos</a></div>
+          <div><table class="ranking-table"><thead><tr><th>#</th><th>Jugador</th><th>Puntos</th></tr></thead><tbody id="rankingBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="rewards" id="comunidad">
+        <div class="wrap">
+          <div class="section-head"><div><div class="eyebrow">Juega, suma, propón</div><h2 class="display">Comunidad NEXUS</h2></div><p>10 puntos por cada euro en sesiones completadas. Tu cuenta también sirve para sugerir ideas.</p></div>
+          <div class="community-grid">
+            <div class="community-account-card">
+              <div class="client-auth-grid" id="clientAuthForms">
+                <form class="client-auth-form" id="clientLoginForm"><h3>Iniciar sesión</h3><div class="field"><label for="clientLoginEmail">Correo electrónico</label><input id="clientLoginEmail" name="email" type="email" autocomplete="email" required maxlength="254" /></div><div class="field"><label for="clientLoginPassword">Contraseña</label><input id="clientLoginPassword" name="password" type="password" autocomplete="current-password" required /></div><label class="remember-row"><input id="rememberMember" name="rememberMe" type="checkbox" /><span>Recordarme durante 30 días</span></label><button class="button" type="submit">Entrar</button><p id="clientLoginMessage" class="small-note" role="status" aria-live="polite"></p></form>
+                <form class="client-auth-form" id="clientRegisterForm"><h3>Crear cuenta</h3><div class="field"><label for="clientRegisterName">Nombre público</label><input id="clientRegisterName" name="displayName" autocomplete="name" required minlength="2" maxlength="80" /></div><div class="field"><label for="clientRegisterEmail">Correo electrónico</label><input id="clientRegisterEmail" name="email" type="email" autocomplete="email" required maxlength="254" /></div><div class="field"><label for="clientRegisterPassword">Contraseña · mínimo 12 caracteres</label><input id="clientRegisterPassword" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="200" /></div><label class="remember-row"><input name="consent" type="checkbox" required /><span>Acepto la <a href="/local/#privacidad">información de privacidad</a>.</span></label><button class="button" type="submit">Crear cuenta</button><p id="clientRegisterMessage" class="small-note" role="status" aria-live="polite"></p></form>
+              </div>
+              <div class="community-signed-in" id="clientSignedIn" hidden><div class="eyebrow">Cuenta conectada</div><h3 id="clientIdentity"></h3><p id="rewardBalance"></p><a class="button button-dark" href="/comunidad/#cuenta">Gestionar cuenta <span aria-hidden="true">↗</span></a><button class="community-logout" id="clientLogout" type="button">Cambiar de usuario</button></div>
+              <form class="idea-form" id="suggestionForm" hidden><h3>Propón una idea</h3><div class="field"><label for="suggestionTitle">Título</label><input id="suggestionTitle" name="title" minlength="5" maxlength="100" required /></div><div class="field"><label for="suggestionDescription">Cuéntanos más</label><textarea id="suggestionDescription" name="description" minlength="20" maxlength="2000" required></textarea></div><button class="button" type="submit">Enviar propuesta</button><p id="suggestionMessage" class="small-note" role="status" aria-live="polite"></p></form>
+            </div>
+            <aside class="spenders-panel"><div class="eyebrow">10 puntos por euro</div><h3 class="display">Top de la casa</h3><table class="ranking-table"><thead><tr><th>#</th><th>Jugador</th><th>Puntos</th></tr></thead><tbody id="spendersBody"></tbody></table></aside>
+          </div>
+          <div class="approved-ideas"><div class="eyebrow">Ideas aprobadas</div><div class="approved-ideas-grid" id="approvedIdeas" aria-live="polite"></div></div>
+        </div>
+      </section>
+
+      <section class="contact" id="ubicacion">
+        <div class="wrap contact-inner"><div><div class="eyebrow">Nos vemos en la partida</div><h2 class="display" id="business-display">NEXUS · Tarragona</h2><div class="contact-address" id="business-address">Dirección y contacto pendientes de configurar</div><a id="business-email" class="contact-email" href="mailto:contacto@example.test">contacto@example.test</a></div><a class="button" id="business-map" href="https://www.openstreetmap.org/search?query=Tarragona%2C%20Spain" target="_blank" rel="noreferrer">Abrir mapa <span aria-hidden="true">↗</span></a></div>
+      </section>
+
+      <section class="legal-strip" id="legal">
+        <div class="wrap legal-strip-inner"><a href="/local/#privacidad">Privacidad y RGPD</a><a href="/local/#aviso-legal">Aviso legal</a><span>Solo usamos cookies esenciales para mantener la sesión.</span><a href="/admin/">Acceso del personal</a></div>
+      </section>
+    </main>
+
+    <footer class="footer"><div class="wrap footer-inner"><a class="brand" href="#inicio"><span class="brand-mark">N</span><span id="footer-brand">NEXUS</span></a><span>Gaming social · Tarragona</span><a href="/comunidad/">Comunidad</a><a href="/admin/">Acceso del personal</a><span>© <span id="year"></span> <span id="footer-business">Nombre del local</span></span></div></footer>
+
+    <div class="modal-backdrop" id="signupBackdrop" role="presentation">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="signupTitle">
+        <div class="modal-head"><div><div class="eyebrow">Torneo NEXUS</div><h2 id="signupTitle" class="display">Inscripción</h2></div><button class="modal-close" id="signupClose" type="button" aria-label="Cerrar">×</button></div>
+        <form id="signupForm"><input type="hidden" name="tournamentSlug" id="signupTournament" /><div class="field"><label for="signupName">Nombre</label><input id="signupName" name="name" required maxlength="100" /></div><div class="field"><label for="signupGamertag">Gamertag</label><input id="signupGamertag" name="gamertag" required maxlength="40" /></div><div class="field"><label for="signupEmail">Email</label><input id="signupEmail" name="email" type="email" required maxlength="254" /></div><div class="field"><label for="signupPhone">Teléfono</label><input id="signupPhone" name="phone" type="tel" required /></div><label class="remember-row"><input name="acceptedRules" type="checkbox" required /><span>Acepto las normas del torneo.</span></label><p class="small-note" id="signupMessage" role="status" aria-live="polite"></p><button class="button" type="submit">Confirmar inscripción</button></form>
+      </div>
+    </div>
+    <div class="notice" id="notice" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/nexus-home.js"></script>
+  </body>
+</html>

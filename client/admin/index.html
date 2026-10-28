@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#11120f" />
+    <title>Panel del local | Acceso privado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="admin-body">
+    <a class="skip-link" href="#admin-main">Saltar al contenido</a>
+    <header class="admin-header">
+      <a class="admin-brand" href="/" aria-label="Volver a la web pública"><span>LG<span>/</span></span><strong>LOCAL GAMING</strong></a>
+      <div class="admin-header-right"><span>ÁREA PRIVADA</span><a href="/">Volver a la web <span aria-hidden="true">↗</span></a></div>
+    </header>
+    <main id="admin-main" class="admin-main">
+      <section id="login-view" class="login-view" aria-labelledby="login-title">
+        <p class="admin-eyebrow">PERSONAL DEL LOCAL / ACCESO SEGURO</p>
+        <h1 id="login-title">Hola de nuevo.</h1>
+        <p class="login-description">Entra para publicar novedades y mantener al día la web.</p>
+        <form id="login-form" class="admin-form login-form">
+          <label>Usuario<input name="username" type="text" autocomplete="username" required minlength="2" /></label>
+          <label>Contraseña<input name="password" type="password" autocomplete="current-password" required minlength="1" /></label>
+          <button class="admin-button admin-button-dark" type="submit">Entrar al panel <span aria-hidden="true">↗</span></button>
+          <p id="login-message" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section id="password-change-view" class="login-view password-change-view" aria-labelledby="password-change-title" hidden>
+        <p class="admin-eyebrow">PRIMER ACCESO / CAMBIO OBLIGATORIO</p>
+        <h1 id="password-change-title">Crea tu contraseña.</h1>
+        <p class="login-description">La clave inicial es temporal. Elige una contraseña única de 12 caracteres o más para abrir el panel.</p>
+        <form id="password-change-form" class="admin-form login-form">
+          <label>Nueva contraseña<input name="newPassword" type="password" autocomplete="new-password" required minlength="12" /></label>
+          <label>Repite la contraseña<input name="confirmPassword" type="password" autocomplete="new-password" required minlength="12" /></label>
+          <button class="admin-button admin-button-dark" type="submit">Guardar contraseña <span aria-hidden="true">↗</span></button>
+          <p id="password-change-message" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="dashboard-view" aria-labelledby="dashboard-title" hidden>
+        <div class="dashboard-heading">
+          <div><p class="admin-eyebrow">PANEL DEL LOCAL / NOTICIAS</p><h1 id="dashboard-title">Publica lo que pasa.</h1><p id="staff-name" class="staff-name"></p></div>
+          <button id="logout-button" class="admin-button admin-button-quiet" type="button">Cerrar sesión <span aria-hidden="true">↗</span></button>
+        </div>
+        <nav class="dashboard-tabs" role="tablist" aria-label="Secciones de gestión">
+          <button role="tab" id="tab-news" aria-controls="panel-news" aria-selected="true" data-admin-tab="news">Noticias</button>
+          <button role="tab" id="tab-tournaments" aria-controls="panel-tournaments" aria-selected="false" data-admin-tab="tournaments">Torneos</button>
+          <button role="tab" id="tab-reservations" aria-controls="panel-reservations" aria-selected="false" data-admin-tab="reservations">Reservas</button>
+          <button role="tab" id="tab-members" aria-controls="panel-members" aria-selected="false" data-admin-tab="members">Cuentas y roles</button>
+          <button role="tab" id="tab-ideas" aria-controls="panel-ideas" aria-selected="false" data-admin-tab="ideas">Ideas del staff</button>
+        </nav>
+        <section id="panel-news" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-news">
+        <div class="dashboard-grid">
+          <section class="editor-panel" aria-labelledby="editor-title">
+            <div class="panel-heading"><div><p class="admin-eyebrow">EDITOR DE CONTENIDO</p><h2 id="editor-title">Nueva noticia</h2></div><span class="draft-indicator"><i></i> BORRADOR O PUBLICACIÓN</span></div>
+            <form id="news-form" class="admin-form news-form">
+              <label>Titular<input name="title" type="text" maxlength="120" required placeholder="Ej. Abrimos inscripciones para el torneo" /></label>
+              <label>Resumen<textarea name="excerpt" rows="2" maxlength="240" required placeholder="Una frase que aparecerá en la portada"></textarea><small>Entre 10 y 240 caracteres.</small></label>
+              <label>Texto de la noticia<textarea name="body" rows="7" maxlength="12000" required placeholder="Cuenta los detalles importantes…"></textarea><small>Entre 20 y 12.000 caracteres.</small></label>
+              <label>Imagen de portada · URL HTTPS<input name="imageUrl" type="url" maxlength="500" placeholder="https://… (opcional)" /></label>
+              <label>Visibilidad<select name="status"><option value="draft">Guardar como borrador</option><option value="published">Publicar en la web</option></select></label>
+              <div class="editor-actions"><button class="admin-button admin-button-dark" type="submit">Guardar noticia <span aria-hidden="true">↗</span></button><button id="reset-news" class="admin-button admin-button-quiet" type="button" hidden>Descartar cambios</button></div>
+              <p id="news-message" class="form-message" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="news-management" aria-labelledby="news-management-title">
+            <div class="panel-heading"><div><p class="admin-eyebrow">CONTENIDO DEL LOCAL</p><h2 id="news-management-title">Noticias</h2></div><span id="news-count" class="news-count">0</span></div>
+            <div id="admin-news-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando contenido…</p></div>
+          </section>
+        </div>
+        </section>
+        <section id="panel-tournaments" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-tournaments" hidden>
+          <div class="panel-heading"><div><p class="admin-eyebrow">COMPETICIÓN</p><h2 id="tournament-editor-title">Añadir torneo</h2></div><span id="tournament-count" class="news-count">00</span></div>
+          <div class="tournament-admin-grid">
+            <form id="tournament-form" class="admin-form news-form">
+              <label>Nombre del torneo<input name="title" type="text" maxlength="120" required /></label>
+              <label>Juego<input name="game" type="text" maxlength="100" required /></label>
+              <div class="admin-field-pair"><label>Fecha<input name="startsOn" type="date" required /></label><label>Hora<input name="startsAt" type="time" required /></label></div>
+              <label>Formato<input name="format" type="text" maxlength="100" required placeholder="Eliminatoria, liguilla…" /></label>
+              <div class="admin-field-pair"><label>Plazas<input name="capacity" type="number" min="2" max="256" required value="16" /></label><label>Inscripción (€)<input name="entryFeeEuros" type="number" min="0" step="0.01" required value="0" /></label></div>
+              <label>Premio<input name="prize" type="text" maxlength="300" /></label>
+              <label>Normas<textarea name="rules" rows="3" maxlength="5000"></textarea></label>
+              <label>Estado<select name="status"><option value="open">Inscripción abierta</option><option value="closed">Inscripción cerrada</option><option value="completed">Finalizado</option></select></label>
+              <div class="editor-actions"><button class="admin-button admin-button-dark" type="submit">Guardar torneo <span aria-hidden="true">↗</span></button><button id="reset-tournament" class="admin-button admin-button-quiet" type="button" hidden>Cancelar edición</button></div>
+              <p id="tournament-message" class="form-message" role="status" aria-live="polite"></p>
+            </form>
+            <div class="tournament-admin-content"><div id="admin-tournament-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando torneos…</p></div><div id="tournament-entries" class="tournament-entries" hidden></div></div>
+          </div>
+        </section>
+        <section id="panel-reservations" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-reservations" hidden>
+          <div class="panel-heading"><div><p class="admin-eyebrow">SESIONES DEL LOCAL</p><h2>Reservas recientes</h2></div><button id="refresh-reservations" class="admin-button admin-button-quiet" type="button">Actualizar</button></div>
+          <div id="admin-reservation-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando reservas…</p></div>
+        </section>
+        <section id="panel-members" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-members" hidden>
+          <div class="panel-heading"><div><p class="admin-eyebrow">CUENTAS DE LA COMUNIDAD</p><h2>Usuarios y roles</h2></div><button id="refresh-members" class="admin-button admin-button-quiet" type="button">Actualizar</button></div>
+          <p class="access-note">Los registros nuevos reciben el rol user. Asigna moderator para revisar ideas o administrator para gestionar moderadores.</p>
+          <div id="admin-member-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando cuentas…</p></div>
+        </section>
+        <section id="panel-ideas" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-ideas" hidden>
+          <div class="panel-heading"><div><p class="admin-eyebrow">PARTICIPACIÓN</p><h2>Ideas de la comunidad</h2></div><button id="refresh-ideas" class="admin-button admin-button-quiet" type="button">Actualizar</button></div>
+          <p class="access-note">Aprueba para publicarlas en Comunidad o rechaza indicando un motivo. Solo el personal puede moderar esta bandeja.</p>
+          <div id="admin-idea-list" class="admin-news-list" aria-live="polite"><p class="list-loading">Cargando ideas…</p></div>
+        </section>
+        <p id="access-note" class="access-note">Sesión privada con caducidad automática. Las publicaciones se muestran en la portada.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/admin.js"></script>
+  </body>
+</html>

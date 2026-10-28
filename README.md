@@ -1,0 +1,104 @@
+# Local Gaming
+
+Aplicación para un local gaming con páginas públicas independientes, reservas, cuentas y puntos, torneos, sugerencias de comunidad y panel privado.
+
+## Requisitos
+
+- Node.js 20 o superior y npm.
+- En Windows, `better-sqlite3` puede necesitar herramientas de compilación de C++ si no hay un binario precompilado compatible.
+
+## Instalación y desarrollo
+
+```powershell
+Copy-Item .env.example .env
+npm install
+npm run db:setup
+npm run dev
+```
+
+La web estará en `http://127.0.0.1:5173` y la API en `http://127.0.0.1:3000`.
+
+Rutas públicas: `/`, `/servicios/`, `/tarifas/`, `/torneos/`, `/noticias/`, `/comunidad/`, `/local/` y `/reservar/`. El panel del personal está en `/admin/`.
+
+## Scripts
+
+- `npm run dev`: inicia API y Vite.
+- `npm run build`: genera el frontend de producción en `client/dist`.
+- `npm start`: inicia la API y sirve el build si `NODE_ENV=production`.
+- `npm test`: ejecuta las pruebas con Vitest.
+- `npm run seed`: aplica migraciones y carga datos de demostración.
+- `npm run admin:create`: crea una cuenta administradora con credenciales aleatorias; se muestran una sola vez.
+- `npm run db:migrate`: aplica migraciones pendientes.
+- `npm run db:setup`: aplica migraciones y carga datos de demostración.
+- `npm run lint`, `npm run format:check`: revisiones de ESLint y Prettier.
+
+## Variables de entorno
+
+`.env.example` documenta las variables disponibles. `DATABASE_PATH` admite una ruta relativa a la raíz del proyecto; los ficheros SQLite se guardan en `data/`, que no se versiona. La zona horaria inicial es `Europe/Madrid`.
+
+Para crear un administrador aleatorio, ejecuta `npm run admin:create` y guarda las credenciales que imprime: la contraseña no se almacena en claro y no puede recuperarse después. También puedes configurar `ADMIN_USERNAME` y `ADMIN_PASSWORD` en `.env` y ejecutar `npm run db:setup`; exige 12 caracteres o más. En desarrollo se permite `admin/admin` solo como clave bootstrap, con cambio obligatorio en el primer acceso; no se permite en producción. El hash se genera con bcrypt y la sesión utiliza cookies `httpOnly` más token CSRF. En producción, sirve el sitio exclusivamente por HTTPS.
+
+## Datos de demostración
+
+El seed es idempotente e incluye cuatro tipos de puesto, tarifas y un bono de ejemplo, horarios, una reserva, tres torneos y jugadores con resultados. Los valores del local se leen desde `.env`. Precios, capacidades, juegos, premios, horarios y datos de contacto son ficticios y deben sustituirse antes de publicar. Los correos usan el dominio reservado `example.test`.
+
+## API
+
+### `GET /api/health`
+
+Respuesta correcta: `200 application/json` con `{"status":"ok"}`.
+
+### `GET /api/public`
+
+Devuelve el negocio, puestos activos, tarifas, horario, torneos abiertos, ranking competitivo, Top 10 de puntos por gasto, ideas aprobadas y noticias publicadas.
+
+### `GET /api/availability?seatType=pc-gaming&date=AAAA-MM-DD&durationHours=2`
+
+Devuelve franjas de inicio, plazas restantes y precio total. Solo incluye horas dentro del horario configurado y excluye festivos/cierres.
+
+### `POST /api/reservations`
+
+Recibe `seatType`, `date`, `startTime`, `durationHours` (1–6), `customerName`, `customerEmail`, `customerPhone`, `consent: true` y `website: ""` (honeypot). La respuesta `201` contiene código, token de cancelación, resumen, total y estado `pending`. La escritura y comprobación de capacidad usan transacción SQLite inmediata.
+
+### `POST /api/reservations/cancel`
+
+Recibe `code` y `token`. Solo cancela reservas activas con al menos 24 horas de antelación.
+
+### `POST /api/members/register`, `POST /api/members/login`, `GET /api/members/session`, `POST /api/members/logout`
+
+Registro público con nombre, email único, contraseña de al menos 12 caracteres y consentimiento. Los usuarios nuevos tienen rol `user`; el servidor almacena bcrypt y usa sesión `httpOnly` con CSRF. Una sesión enlaza la reserva al email de la cuenta.
+
+### `POST /api/members/ideas`, `GET /api/members/ideas`, `PATCH /api/members/ideas/:id`
+
+Los miembros autenticados pueden proponer ideas; solo se publican tras aprobación. `moderator` y `administrator` pueden revisar la cola. El rol `administrator` se asigna desde el panel staff.
+
+### `POST /api/tournaments/:slug/register`
+
+Inscripción pública con nombre, gamertag, email, teléfono y aceptación de normas. Los duplicados por torneo se rechazan y el aforo excedido pasa a lista de espera.
+
+### `POST /api/admin/login`, `GET /api/admin/session`, `POST /api/admin/logout`
+
+Login de personal, consulta de sesión y cierre. Las mutaciones del panel requieren sesión y cabecera `X-CSRF-Token`.
+
+### `GET|POST /api/admin/news`, `PUT|DELETE /api/admin/news/:id`
+
+Listado para personal y gestión de noticias. Crear, editar y eliminar requiere rol `administrator`; el contenido puede mantenerse en borrador o publicarse. Las imágenes deben usar HTTPS.
+
+### `GET|POST /api/admin/tournaments`, `PUT|DELETE /api/admin/tournaments/:id`, `GET /api/admin/tournaments/:id/entries`, `POST /api/admin/tournaments/:id/results`
+
+Desde el panel se crean/editan torneos, se abren o cierran inscripciones, se consultan participantes/lista de espera y se registran posiciones/puntos. Guardar resultados finaliza el torneo y recalcula la clasificación competitiva.
+
+### `GET /api/admin/reservations`, `PATCH /api/admin/reservations/:id/status`, `GET /api/admin/members`, `PUT /api/admin/members/:id/role`
+
+El personal actualiza reservas; marcarlas `completed` suma puntos a la cuenta vinculada. El administrador puede asignar `user`, `moderator` o `administrator`.
+
+Los puntos de fidelidad son 10 por euro en reservas completadas, calculados de forma proporcional a los céntimos. El Top público solo muestra puntos y sesiones; el gasto exacto queda en el perfil propio.
+
+## Pendiente antes de producción
+
+- Confirmar datos reales, capacidades, horarios, tarifas, dirección y textos legales/RGPD.
+- Configurar proveedor de correo; en desarrollo la confirmación se simula en el log.
+- Completar calendario, gestión avanzada de horarios/cierres, métricas y exportación CSV.
+- Integrar cobro real de inscripciones, proveedor de email y automatización de cuadros/liguillas.
+- Completar la gestión de solicitudes de acceso/borrado de datos y la política legal con el responsable del negocio.
+- Configurar HTTPS, copias de seguridad de SQLite y límites de rate-limit compartidos si se ejecutan varias instancias.

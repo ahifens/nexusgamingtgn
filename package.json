@@ -1,0 +1,47 @@
+{
+  "name": "local-gaming",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "node --watch server/src/server.js",
+    "dev:client": "vite --config client/vite.config.js",
+    "build": "vite build --config client/vite.config.js",
+    "start": "node server/src/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "node scripts/db.js seed",
+    "admin:create": "node scripts/create-admin.js",
+    "db:migrate": "node scripts/db.js migrate",
+    "db:setup": "node scripts/db.js setup",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.2.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.32.0",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "vite": "^7.0.6",
+    "vitest": "^5.0.5"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true,
+    "esbuild@0.28.2": true
+  }
+}

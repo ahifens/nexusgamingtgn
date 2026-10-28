@@ -1,0 +1,234 @@
+:root {
+  --ink: #17111f;
+  --paper: #f7f5fa;
+  --acid: #c5a1f2;
+  --coral: #ff755d;
+  --muted: #827b8c;
+  --line: #ded8e7;
+  --page: 1280px;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+html { scroll-padding-top: 82px; }
+body { color: var(--paper); background: var(--ink); }
+body.auth-checking > * { visibility: hidden; }
+.eyebrow { color: #b995eb; font-size: 10px; letter-spacing: 0; }
+.section-number { color: #a15a4f; }
+.skip-link { color: var(--ink); background: #d7bcf8; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline-color: #b995eb; }
+
+.site-header { border-bottom-color: #ffffff20; background: #17111ff0; }
+.nav-wrap { height: 82px; }
+.brand-mark { width: 43px; height: 43px; border-color: #b995eb; color: #d2b9f4; }
+.brand-copy strong { font-size: 12px; }
+.main-nav { gap: 24px; }
+.main-nav a { color: #d6cedd; font-size: 12px; }
+.main-nav a:hover, .main-nav a[aria-current="page"] { color: #d5b9fb; }
+.main-nav .nav-booking { min-height: 46px; padding-inline: 18px; color: #21172d; background: #c5a1f2; }
+.main-nav .nav-booking:hover { color: #21172d; background: #ddc9fb; }
+.main-nav .nav-account { min-height: 42px; display: inline-flex; align-items: center; padding: 0 12px; border: 1px solid #8e74a8; color: #dfcdf5; }
+.main-nav .nav-account:hover { border-color: #d3b3fa; color: #f0e5ff; }
+
+.hero { min-height: 740px; max-height: 900px; }
+.hero-image { object-position: center 38%; }
+.hero-shade { background: rgba(15, 10, 23, .62); }
+.hero-content { padding-top: 20px; }
+.hero-eyebrow { color: #eee8f5; font-size: 11px; }
+.live-dot { background: #d2b3f7; box-shadow: 0 0 15px #d2b3f7a0; }
+.hero h1 { margin: 31px 0 22px; font-size: 92px; line-height: .92; }
+.hero h1 span { color: #d0b1f5; }
+.hero-description { max-width: 430px; color: #e6dfec; font-size: 16px; }
+.hero-actions { gap: 30px; margin-top: 31px; }
+.button { min-height: 56px; padding-inline: 22px; font-size: 13px; }
+.button-acid { color: #22162e; background: #c5a1f2; }
+.button-acid:hover { background: #dfcafa; }
+.hero-footnote { margin-top: 50px; color: #e0d9e8; }
+.hero-footnote b { color: #ff9a83; }
+.hero-index i { background: #c5a1f2; }
+.ticker { height: 48px; color: #21172d; background: #c5a1f2; }
+.ticker-track b { color: #8154af; }
+
+.services-section, .events-section { background: #f7f5fa; color: #211a2a; }
+.services-section { padding-top: 68px; }
+.section { padding-block: 104px; }
+.section-heading { margin-bottom: 48px; }
+.section-heading .eyebrow, .gallery-heading .eyebrow, .faq-section .eyebrow { color: #655b70; }
+.section-heading h2, .gallery-heading h2, .rates-aside h2, .visit-content h2, .booking-inner h2, .faq-layout h2, .rules-layout h2 { margin-top: 20px; font-size: 54px; line-height: 1.02; }
+.services-section em, .faq-section em { color: #76529a; }
+.section-intro { max-width: 360px; color: #625a69; font-size: 15px; }
+.services-grid { gap: 18px; }
+.service-card { border: 0; background: #eeebf2; }
+.service-image { height: 205px; background: #28212f; }
+.service-copy { padding: 21px 20px 20px; }
+.service-kicker { color: #6b6371; }
+.service-copy h3 { font-size: 21px; }
+.service-description { color: #625a69; }
+.service-specs { color: #776d7f; }
+.service-capacity { border-color: #d0c8d8; color: #51455d; }
+
+.rates-section { padding-block: 104px; background: #241a30; }
+.rates-aside h2 { color: #f8f5fb; }
+.rates-aside em { color: #d2b5f7; }
+.rates-aside > p:not(.eyebrow):not(.demo-note) { color: #d3cadc; font-size: 15px; }
+.demo-note { color: #b9afc2; }
+.rate-label { color: #c9c0d0; }
+.rate-row { min-height: 74px; border-color: #50445c; }
+.rate-name strong { color: #f7f4fa; font-size: 15px; }
+.rate-name span, .rate-unit { color: #b6adbf; }
+.rate-price { color: #d2b5f7; font-size: 22px; }
+.extras-heading { color: #f4eff9; }
+.extra-rate-row { border-color: #50445c; color: #f2edf6; }
+.extra-rate-row span { color: #c4bbcf; }
+.data-status { color: #b5abba; }
+
+.events-section { padding-block: 102px; }
+.events-section .section-heading .eyebrow { color: #655b70; }
+.events-section em { color: #9c5d52; }
+.events-layout { gap: 42px; }
+.tournament-panel { border-color: #241a30; }
+.panel-topline { min-height: 50px; border-color: #d2cbd8; }
+.open-label { color: #604184; }
+.open-label i { background: #74519b; }
+.tournament-item { min-height: 145px; grid-template-columns: 78px minmax(0, 1fr) 120px 112px; gap: 17px; border-color: #d2cbd8; }
+.tournament-date strong { font-size: 17px; }
+.tournament-details h3, .tournament-page-layout .tournament-details h2 { font-size: 18px; }
+.tournament-meta { color: #6a626f; }
+.tournament-prize span { color: #746b79; }
+.tournament-link { color: #51356e; }
+.ranking-panel { background: #241a30; }
+.ranking-head .eyebrow { color: #d2b5f7; }
+.ranking-head h3 span, .leaderboard-points { color: #d2b5f7; }
+.leaderboard-row { border-color: #51465c; }
+
+.news-section { background: #21182c; }
+.news-card { border-color: #494052; background: #2b2236; }
+.news-date, .news-readmore summary { color: #d2b5f7; }
+.news-excerpt { color: #d4cbdd; }
+.news-readmore { border-color: #554a62; }
+.news-readmore > p { color: #ddd4e6; }
+.gallery-section { padding-block: 100px 75px; background: #e8e4ed; color: #211a2a; }
+.gallery-heading h2 { font-size: 46px; }
+.gallery-shot, .gallery-shot-large { height: 370px; }
+.gallery-shot-large { height: 460px; }
+.gallery-shot-offset { margin-top: 42px; }
+.image-disclaimer { color: #625a69; }
+
+.visit-section { background: #f7f5fa; color: #211a2a; }
+.visit-image { min-height: 650px; }
+.visit-content { width: min(100% - 96px, 600px); }
+.visit-content h2 { color: #211a2a; }
+.visit-details p { color: #3e3547; }
+.visit-details a { color: #49305f; }
+.visit-details > div h3 { color: #655c6e; }
+.opening-hours li { color: #332a3b; }
+.opening-hours li span:last-child { color: #655c6e; }
+.social-links { border-color: #d5cdda; }
+.social-links span { color: #716777; }
+.social-links a { color: #382747; }
+.booking-section { background: #c5a1f2; color: #21172d; }
+.booking-inner .eyebrow { color: #563a73; }
+.booking-inner em { color: #563a73; }
+.booking-intro > p:last-child { color: #443552; }
+.booking-form label { color: #392c47; }
+.booking-form input:not([type="checkbox"]), .booking-form select, .cancel-form input { border-color: #846b9e; background: #fbf9fd; }
+.booking-form input:focus, .booking-form select:focus, .cancel-form input:focus { outline-color: #4e336d; }
+.consent-row { color: #3e304d !important; }
+.booking-price, .booking-message, .cancel-details summary, .cancel-form > p { color: #392c47; }
+.booking-confirmation { border-color: #6b4c8d; background: #e7dcf3; }
+.booking-confirmation .confirmation-note { color: #514460; }
+.cancel-details { border-color: #9379ac; }
+.button-dark { color: #f7f4fa; background: #241a30; }
+.button-dark:hover { background: #382747; }
+
+.faq-section { background: #f7f5fa; color: #211a2a; }
+.faq-section em { color: #76529a; }
+.faq-list details, .faq-list details:first-child { border-color: #d2cbd8; }
+.faq-list details p { color: #5e5665; }
+.rules-section { background: #241a30; }
+.rules-list li { color: #e4ddea; }
+.rules-list li, .rules-list li:first-child { border-color: #51465c; }
+.legal-section { background: #e8e4ed; color: #211a2a; }
+.legal-grid details p, .legal-grid > p { color: #625a69; }
+.legal-grid a { color: #51356e; }
+.site-footer { background: #17111f; }
+.footer-bottom { border-color: #41374b; }
+.footer-page-links a:hover, .back-top { color: #d2b5f7; }
+
+.page-banner { background: #241a30; }
+.page-banner::after { border-color: #c8a4ff50; box-shadow: 0 0 0 44px #c8a4ff0c, 0 0 0 88px #c8a4ff09; }
+.page-banner-inner { min-height: 360px; }
+.page-title { font-size: 68px; }
+.page-title em { color: #d2b5f7; }
+.page-banner-aside p { color: #d4cada; font-size: 15px; }
+.page-content-section { padding-block: 74px 96px; }
+.services-page-card { background: #eeebf2; }
+.service-card-price { color: #674392; }
+.rates-section .rates-aside h2 { font-size: 42px; }
+.tournament-page-layout .tournament-item { min-height: 154px; }
+.news-section .section-heading h2 em { color: #d2b5f7; }
+.multipage-news-grid .news-card { background: #2b2236; }
+.venue-page-section, .venue-faq-section { background: #f7f5fa; color: #211a2a; }
+.venue-contact-panel, .venue-hours-panel { background: #eeebf2; }
+.venue-contact-list { border-color: #d5cdda; }
+.venue-contact-list a { color: #563a73; }
+.community-section { background: #f7f5fa; }
+.community-account, .community-top-panel { border-color: #ded8e7; }
+.community-top-panel { border-color: #241a30; }
+.auth-tab.is-active { color: #51356e; border-color: #76529a; }
+.community-form input:not([type="checkbox"]), .idea-form input, .idea-form textarea { border-color: #b6adbf; }
+.community-form input:focus, .idea-form input:focus, .idea-form textarea:focus { outline-color: #674392; }
+.community-top-panel > .eyebrow, .community-top-panel .leaderboard-rank, .community-top-panel .leaderboard-points { color: #d2b5f7; }
+.remember-member-row { margin: 0 0 2px; }
+.account-settings { margin-top: 20px; border-top: 1px solid #ded8e7; }
+.account-settings > summary { min-height: 48px; display: flex; align-items: center; color: #51356e; cursor: pointer; font-size: 12px; font-weight: 700; }
+.account-settings-form { margin: 4px 0 18px; padding: 15px; background: #f0edf4; }
+.account-settings-form .button { min-height: 42px; }
+.account-settings-form .form-message { min-height: 16px; }
+.approved-ideas-panel, .community-moderation { border-color: #d8d1df; }
+.idea-card, .moderation-idea { border-color: #ded8e7; background: #eeebf2; }
+
+@media (max-width: 980px) {
+  .main-nav { gap: 15px; }
+  .main-nav a { font-size: 11px; }
+  .hero { min-height: 680px; }
+  .tournament-item { grid-template-columns: 64px minmax(0, 1fr) 100px; }
+  .tournament-item .tournament-signup { grid-column: 2 / -1; margin: -16px 0 13px; }
+  .gallery-shot, .gallery-shot-large { height: 340px; }
+  .gallery-shot-large { height: 420px; }
+}
+
+@media (max-width: 700px) {
+  .nav-wrap { height: 68px; }
+  .hero { min-height: 670px; max-height: none; }
+  .hero-image { object-position: 58% center; }
+  .hero-shade { background: rgba(15, 10, 23, .68); }
+  .hero h1 { font-size: 61px; }
+  .hero-description { max-width: 330px; font-size: 14px; }
+  .section { padding-block: 70px; }
+  .services-section { padding-top: 44px; }
+  .section-heading h2, .gallery-heading h2, .rates-aside h2, .visit-content h2, .booking-inner h2, .faq-layout h2, .rules-layout h2 { font-size: 40px; }
+  .section-intro { font-size: 13px; }
+  .service-image { height: 148px; }
+  .service-copy { padding: 16px 12px; }
+  .service-description { min-height: 62px; }
+  .rates-section { padding-block: 70px; }
+  .events-section { padding-block: 70px; }
+  .tournament-item { grid-template-columns: 53px minmax(0, 1fr) auto; gap: 9px; }
+  .tournament-item .tournament-prize { grid-column: 2; grid-row: 2; display: flex; gap: 6px; margin-top: -22px; }
+  .tournament-item .tournament-signup { grid-column: 2 / -1; margin: -14px 0 12px; }
+  .gallery-section { padding-block: 65px 48px; }
+  .gallery-shot, .gallery-shot-large { height: 220px; }
+  .gallery-shot-large { height: 270px; }
+  .visit-image { min-height: 320px; }
+  .visit-content { width: calc(100% - 40px); }
+  .booking-inner { display: block; }
+  .booking-intro > p:last-child { margin-bottom: 25px; }
+  .booking-fields-triplet { grid-template-columns: 1fr 1fr; }
+  .booking-fields-triplet label:first-child { grid-column: 1 / -1; }
+  .booking-fields-pair { grid-template-columns: 1fr; }
+  .footer-page-links { display: none; }
+  .page-banner-inner { min-height: 315px; }
+  .page-title { font-size: 48px; }
+  .page-content-section { padding-block: 42px 65px; }
+}

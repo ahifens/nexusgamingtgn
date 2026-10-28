@@ -1,0 +1,140 @@
+.page-banner { position: relative; overflow: hidden; color: var(--paper); background: #1b1821; }
+.page-banner::after { position: absolute; top: -90px; right: 7%; width: 280px; height: 280px; border: 1px solid #c8a4ff38; border-radius: 50%; box-shadow: 0 0 0 44px #c8a4ff08, 0 0 0 88px #c8a4ff06; content: ""; }
+.page-banner-inner { position: relative; z-index: 1; min-height: 330px; display: flex; align-items: end; justify-content: space-between; gap: 48px; padding-top: 72px; padding-bottom: 58px; }
+.page-title { max-width: 14ch; margin: 20px 0 0; font-size: 64px; line-height: .98; }
+.page-title em { color: #c8a4ff; font-style: normal; }
+.page-banner-aside { width: min(100%, 360px); padding-bottom: 6px; }
+.page-banner-aside p { margin: 0 0 22px; color: #c4bdcb; font-size: 14px; line-height: 1.7; }
+.page-content-section { padding: 62px 0 88px; }
+.services-section, .page-content-section.events-section { background: #f1f0e9; color: var(--ink); }
+.services-page-card { background: #e7e5df; }
+.service-card-price { margin: 14px 0 11px; color: #593490; font-size: 15px; font-weight: 700; }
+.rates-section .rates-aside h2 { margin-top: 17px; font-size: 37px; }
+.rates-section .rates-aside .demo-note { margin-top: 20px; }
+.tournament-page-layout { grid-template-columns: minmax(0, 1.35fr) minmax(275px, .65fr); align-items: start; }
+.tournament-page-layout .tournament-item { min-height: 146px; grid-template-columns: 90px minmax(0, 1fr) 120px 120px; }
+.tournament-page-layout .tournament-details h2 { margin: 0; font-size: 18px; }
+.tournament-page-layout .ranking-head h2 { margin: 13px 0 4px; font-size: 36px; }
+.tournament-page-layout .ranking-head h2 span { color: #c8a4ff; }
+.tournament-signup { grid-column: 2 / -1; margin: -17px 0 14px; }
+.tournament-signup summary { width: fit-content; color: #583578; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.tournament-signup-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 12px; padding: 14px; background: #e9e7df; }
+.tournament-signup-form label { display: grid; gap: 5px; color: #47453f; font-size: 10px; font-weight: 600; }
+.tournament-signup-form input:not([type="checkbox"]) { min-height: 36px; padding: 7px; border: 1px solid #b8b4bf; border-radius: 0; color: var(--ink); background: #fbfaf6; font: 11px 'Space Grotesk', sans-serif; }
+.tournament-rules-accept { grid-column: 1 / -1; grid-template-columns: 16px 1fr !important; align-items: start; font-weight: 400 !important; line-height: 1.5; }
+.tournament-rules-accept input { width: 15px; height: 15px; margin: 0; accent-color: #674392; }
+.tournament-signup-form button { grid-column: 1 / -1; justify-self: start; }
+.tournament-signup-form .form-message { grid-column: 1 / -1; margin: 0; color: #523477; font-size: 11px; }
+.news-section { background: #17151b; }
+.multipage-news-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.multipage-news-grid .news-card { min-height: 0; }
+.multipage-news-grid .news-card > img { height: 220px; }
+.news-readmore { margin-top: 14px; border-top: 1px solid var(--line); }
+.news-readmore summary { min-height: 39px; display: flex; align-items: center; cursor: pointer; color: #c8a4ff; font-size: 11px; font-weight: 600; }
+.news-readmore > p { margin: 2px 0 14px; color: #c4bdcb; font-size: 12px; line-height: 1.75; white-space: pre-line; }
+.news-page .page-content-section { background: #17151b; }
+.page-content-section.booking-section { background: #c8a4ff; color: var(--ink); }
+.page-content-section.booking-section .eyebrow { color: #503176; }
+.page-content-section.booking-section .booking-inner em { color: #503176; }
+.page-content-section.booking-section .consent-row a { color: #36234f; }
+.venue-page-section { background: #f1f0e9; color: var(--ink); }
+.venue-page-layout { display: grid; grid-template-columns: 1fr .8fr 1.1fr; gap: 28px; }
+.venue-contact-panel, .venue-hours-panel { padding: 25px; background: #e7e5df; }
+.venue-contact-panel h2, .venue-hours-panel h2 { margin: 15px 0 20px; font-size: 26px; line-height: 1.15; }
+.venue-contact-list { display: grid; align-content: start; gap: 13px; padding: 24px; border: 1px solid #d5d4cb; }
+.venue-contact-list h3 { margin: 0 0 4px; color: #626159; font: 10px var(--mono); }
+.venue-contact-list a { width: fit-content; color: #36234f; font-size: 12px; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.venue-hours-panel .opening-hours { max-width: 100%; }
+.venue-hours-panel .opening-hours li { color: var(--ink); }
+.venue-hours-panel .opening-hours li span:last-child { color: #5e5e56; }
+.venue-faq-section { background: #e7e5df; color: var(--ink); }
+.venue-faq-section .faq-layout h2 { margin-top: 17px; font-size: 40px; }
+.page-error { width: min(calc(100% - 48px), 900px); margin: 80px auto; color: #ff8b79; }
+.community-section { background: #f1f0e9; color: var(--ink); }
+.community-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); align-items: start; gap: 25px; }
+.community-account, .community-top-panel { min-width: 0; padding: 27px; border: 1px solid #d5d4cb; background: #e8e7de; }
+.community-heading h2, .approved-ideas-panel h2, .community-moderation h2 { margin: 10px 0 0; font-size: 25px; }
+.community-auth { margin-top: 21px; }
+.community-auth-tabs { display: flex; gap: 19px; margin-bottom: 20px; border-bottom: 1px solid #c9c8bf; }
+.auth-tab { min-height: 38px; padding: 0 0 8px; border: 0; border-bottom: 2px solid transparent; color: #66655d; background: transparent; font-size: 12px; cursor: pointer; }
+.auth-tab.is-active { border-color: #694594; color: #432d61; font-weight: 700; }
+.community-form { display: grid; gap: 13px; }
+.community-form[hidden], .community-profile[hidden], .idea-form[hidden] { display: none; }
+.community-form label, .idea-form label { display: grid; gap: 6px; color: #45443d; font-size: 11px; font-weight: 700; }
+.community-form input:not([type="checkbox"]), .idea-form input, .idea-form textarea { width: 100%; min-height: 43px; padding: 10px; border: 1px solid #aaa7b0; border-radius: 0; color: var(--ink); background: #f7f6f1; font: 12px 'Space Grotesk', sans-serif; }
+.community-form input:focus, .idea-form input:focus, .idea-form textarea:focus { outline: 2px solid #674392; outline-offset: 2px; }
+.community-consent { grid-template-columns: 17px 1fr !important; align-items: start; gap: 9px !important; font-weight: 400 !important; line-height: 1.5; }
+.community-consent input { width: 16px; height: 16px; margin: 1px 0 0; accent-color: #674392; }
+.community-form .button { min-height: 44px; justify-self: start; border: 0; cursor: pointer; }
+.community-form .form-message, .idea-form .form-message { min-height: 15px; margin: 0; color: #4a3364; font-size: 11px; }
+.profile-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-bottom: 17px; border-bottom: 1px solid #c9c8bf; }
+.profile-name { display: grid; gap: 4px; }
+.profile-name strong { font-size: 17px; }
+.profile-name span { color: #634488; font: 10px var(--mono); text-transform: uppercase; }
+.profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.profile-stat { display: grid; gap: 6px; padding: 13px; background: #f1f0e9; }
+.profile-stat span { color: #716e78; font: 9px var(--mono); }
+.profile-stat strong { color: #56377a; font-size: 24px; }
+.profile-note { margin: 12px 0 0; color: #65635e; font-size: 10px; }
+.idea-form { display: grid; gap: 12px; margin-top: 23px; padding-top: 20px; border-top: 1px solid #c9c8bf; }
+.idea-form h3 { margin: 0; font-size: 16px; }
+.idea-form textarea { min-height: 95px; resize: vertical; line-height: 1.5; }
+.idea-form .button { min-height: 42px; justify-self: start; border: 0; cursor: pointer; }
+.community-top-panel { color: var(--paper); background: #1b1821; border-color: #1b1821; }
+.community-top-panel > .eyebrow { color: #c8a4ff; }
+.community-top-panel > h2 { margin: 10px 0 15px; font-size: 35px; }
+.community-top-panel .leaderboard-row { border-color: #39343f; }
+.community-top-panel .leaderboard-rank, .community-top-panel .leaderboard-points { color: #c8a4ff; }
+.community-top-caption { margin: 15px 0 0; color: #aaa4b2; font-size: 10px; line-height: 1.55; }
+.approved-ideas-panel, .community-moderation { width: min(calc(100% - 64px), var(--page)); margin: 55px auto 0; }
+.approved-ideas-panel .community-heading { margin-bottom: 19px; }
+.approved-ideas-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.idea-card, .moderation-idea { padding: 18px; border: 1px solid #d5d4cb; background: #e8e7de; }
+.idea-card h3, .moderation-idea h3 { margin: 8px 0; font-size: 17px; }
+.idea-card > p:last-child, .moderation-idea > p:not(.eyebrow) { margin: 0; color: #64635c; font-size: 12px; line-height: 1.6; white-space: pre-line; }
+.idea-card .idea-response { margin-top: 12px !important; padding-top: 10px; border-top: 1px solid #cfcdc4; color: #4d3568 !important; }
+.community-moderation { padding-top: 23px; border-top: 1px solid #d0cfc5; }
+.community-moderation > h2 { margin-bottom: 18px; }
+.moderation-queue { display: grid; gap: 10px; }
+.moderation-idea { display: grid; gap: 12px; }
+.moderation-idea input { min-height: 39px; padding: 8px; border: 1px solid #aaa7b0; background: #f7f6f1; font-size: 11px; }
+.moderation-actions { display: flex; gap: 16px; }
+.text-button-danger { color: #b34537; }
+.moderation-actions button:disabled { opacity: .5; }
+.footer-page-links { display: flex; flex-wrap: wrap; gap: 12px 19px; }
+.footer-page-links a { color: #cbc9c1; font-size: 10px; text-decoration: none; }
+.footer-page-links a:hover { color: #c8a4ff; }
+.main-nav a[aria-current="page"] { color: #c8a4ff; }
+
+@media (max-width: 980px) {
+  .tournament-page-layout .tournament-item { grid-template-columns: 65px minmax(0, 1fr) 100px; }
+  .tournament-page-layout .tournament-link { grid-column: 2 / -1; margin: -20px 0 14px; }
+  .venue-page-layout { grid-template-columns: 1fr 1fr; }
+  .venue-hours-panel { grid-column: 1 / -1; }
+  .community-layout { grid-template-columns: 1fr; }
+  .community-top-panel { order: -1; }
+}
+
+@media (max-width: 700px) {
+  .page-banner-inner { min-height: 295px; display: block; padding-top: 58px; padding-bottom: 40px; }
+  .page-title { max-width: 12ch; margin-top: 18px; font-size: 45px; }
+  .page-banner-aside { width: min(100%, 430px); margin-top: 20px; }
+  .page-banner-aside p { margin-bottom: 16px; font-size: 12px; }
+  .page-content-section { padding: 34px 0 60px; }
+  .tournament-page-layout { grid-template-columns: 1fr; }
+  .tournament-page-layout .tournament-item { grid-template-columns: 55px minmax(0, 1fr) auto; gap: 9px; }
+  .tournament-page-layout .tournament-prize { grid-column: 2; grid-row: 2; display: flex; gap: 6px; margin-top: -22px; }
+  .tournament-page-layout .tournament-signup { grid-column: 2 / -1; margin: -16px 0 12px; }
+  .tournament-signup-form { grid-template-columns: 1fr; }
+  .tournament-rules-accept, .tournament-signup-form button, .tournament-signup-form .form-message { grid-column: auto; }
+  .multipage-news-grid { grid-template-columns: 1fr; }
+  .multipage-news-grid .news-card > img { height: 195px; }
+  .venue-page-layout { grid-template-columns: 1fr; gap: 12px; }
+  .venue-hours-panel { grid-column: auto; }
+  .venue-contact-panel, .venue-hours-panel, .venue-contact-list { padding: 19px; }
+  .community-account, .community-top-panel { padding: 19px; }
+  .approved-ideas-panel, .community-moderation { width: calc(100% - 36px); margin-top: 38px; }
+  .approved-ideas-list { grid-template-columns: 1fr; }
+  .venue-contact-panel h2, .venue-hours-panel h2 { font-size: 22px; }
+  .footer-page-links { display: none; }
+}

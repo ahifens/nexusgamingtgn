@@ -1,0 +1,12 @@
+cambia el html a el diseño que he puesto llamado nexus-gaming-tarragona.html y añade todo lo nuevo que has puesto a este diseño y hazlo como este diseño
+
+
+cuando estes en una cuenta que cambie lo de entrar / registrar por cerrar sesion 
+
+y añade cookies y todo lo necesario para recordar el usuario y demas
+
+
+que el ban ni te deje entrar en la web y solo te salga estas baneado y cerrar sesion en una esquina y una parte de apelacion 
+
+
+que el ban ni te deje entrar en la web y solo te salga estas baneado y cerrar sesion en una esquina y una parte de apelacion 
