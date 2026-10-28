@@ -1,10 +1,16 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { rateLimit } from 'express-rate-limit';
+import nodemailer from 'nodemailer';
 import { z } from 'zod';
 
 const sessionLifetimeMs = 8 * 60 * 60 * 1000;
-const rememberedSessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
+const memberRememberDays = Number(process.env.MEMBER_REMEMBER_DAYS ?? 30);
+if (!Number.isInteger(memberRememberDays) || memberRememberDays < 1 || memberRememberDays > 365) {
+  throw new Error('MEMBER_REMEMBER_DAYS debe ser un número entero entre 1 y 365.');
+}
+const rememberedSessionLifetimeMs = memberRememberDays * 24 * 60 * 60 * 1000;
+const passwordResetLifetimeMs = 60 * 60 * 1000;
 const registrationSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
@@ -24,6 +30,13 @@ const profileSchema = z.object({
 const passwordChangeSchema = z.object({
   currentPassword: z.string().min(1).max(200),
   newPassword: z.string().min(12).max(200),
+});
+const passwordResetRequestSchema = z.object({
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+});
+const passwordResetSchema = z.object({
+  token: z.string().min(32).max(128),
+  password: z.string().min(12).max(200),
 });
 const ideaSchema = z.object({
   title: z.string().trim().min(5).max(100),
@@ -83,27 +96,27 @@ function memberSummary(database, memberId) {
   return { ...member, ...stats };
 }
 
-function setSessionCookies(response, sessionToken, csrfToken, lifetimeMs = sessionLifetimeMs) {
+function setSessionCookies(response, sessionToken, csrfToken, lifetimeMs, remembered = false) {
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
-    maxAge: lifetimeMs,
   };
+  if (remembered) options.maxAge = lifetimeMs;
   response.cookie('lg_member_session', sessionToken, options);
   response.cookie('lg_member_csrf', csrfToken, { ...options, httpOnly: false });
 }
 
-function createSession(database, memberId, lifetimeMs = sessionLifetimeMs) {
+function createSession(database, memberId, lifetimeMs = sessionLifetimeMs, remembered = false) {
   const sessionToken = randomBytes(32).toString('base64url');
   const csrfToken = randomBytes(32).toString('base64url');
   const expiresAt = new Date(Date.now() + lifetimeMs).toISOString();
   database.prepare('DELETE FROM member_sessions WHERE expires_at <= ?').run(new Date().toISOString());
   database.prepare(`
-    INSERT INTO member_sessions (member_id, token_hash, csrf_token_hash, expires_at)
-    VALUES (?, ?, ?, ?)
-  `).run(memberId, digest(sessionToken), digest(csrfToken), expiresAt);
+    INSERT INTO member_sessions (member_id, token_hash, csrf_token_hash, expires_at, remembered)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(memberId, digest(sessionToken), digest(csrfToken), expiresAt, remembered ? 1 : 0);
   return { sessionToken, csrfToken };
 }
 
@@ -135,7 +148,45 @@ export function approvedIdeas(database) {
   `).all();
 }
 
-export function createMemberAuth(database) {
+function passwordResetConfiguration() {
+  const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } = process.env;
+  const port = Number(SMTP_PORT);
+  if (!SMTP_HOST || !Number.isInteger(port) || port < 1 || port > 65535
+    || !['true', 'false'].includes(SMTP_SECURE) || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM
+    || !process.env.PUBLIC_BASE_URL) {
+    throw new MemberError(503, 'El servicio de recuperación no está configurado. Contacta con el local.');
+  }
+
+  let baseUrl;
+  try {
+    baseUrl = new URL(process.env.PUBLIC_BASE_URL);
+  } catch {
+    throw new MemberError(503, 'El servicio de recuperación no está configurado. Contacta con el local.');
+  }
+  if (!['http:', 'https:'].includes(baseUrl.protocol)
+    || (process.env.NODE_ENV === 'production' && baseUrl.protocol !== 'https:')) {
+    throw new MemberError(503, 'El servicio de recuperación no está configurado. Contacta con el local.');
+  }
+  return { host: SMTP_HOST, port, secure: SMTP_SECURE === 'true', user: SMTP_USER, password: SMTP_PASSWORD, from: SMTP_FROM, baseUrl };
+}
+
+async function sendPasswordResetEmail({ email, displayName, resetUrl }) {
+  const config = passwordResetConfiguration();
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: { user: config.user, pass: config.password },
+  });
+  await transporter.sendMail({
+    from: config.from,
+    to: email,
+    subject: 'Restablece tu contraseña',
+    text: `Hola ${displayName},\n\nPara restablecer tu contraseña, abre este enlace en la próxima hora:\n${resetUrl}\n\nSi no has solicitado este cambio, ignora este mensaje.`,
+  });
+}
+
+export function createMemberAuth(database, { sendResetEmail = sendPasswordResetEmail } = {}) {
   const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 8,
@@ -150,6 +201,20 @@ export function createMemberAuth(database) {
     legacyHeaders: false,
     message: { error: 'Se han realizado demasiados registros desde esta conexión. Prueba más tarde.' },
   });
+  const passwordResetRequestLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiadas solicitudes. Espera 15 minutos antes de volver a probar.' },
+  });
+  const passwordResetLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiados intentos. Espera 15 minutos antes de volver a probar.' },
+  });
 
   function attachMember(request, _response, next) {
     const token = cookie(request, 'lg_member_session');
@@ -159,6 +224,7 @@ export function createMemberAuth(database) {
       SELECT member_sessions.id AS sessionId,
         member_sessions.csrf_token_hash AS csrfTokenHash,
         member_sessions.expires_at AS expiresAt,
+        member_sessions.remembered,
         members.id AS memberId, members.display_name AS displayName,
         members.email, members.role, members.active
       FROM member_sessions
@@ -218,7 +284,7 @@ export function createMemberAuth(database) {
         VALUES (?, ?, ?, CURRENT_TIMESTAMP)
       `).run(parsed.data.displayName, parsed.data.email, bcrypt.hashSync(parsed.data.password, 12));
       const session = createSession(database, result.lastInsertRowid);
-      setSessionCookies(response, session.sessionToken, session.csrfToken);
+      setSessionCookies(response, session.sessionToken, session.csrfToken, sessionLifetimeMs);
       return response.status(201).json({
         member: memberSummary(database, result.lastInsertRowid),
         csrfToken: session.csrfToken,
@@ -243,9 +309,10 @@ export function createMemberAuth(database) {
       return response.status(401).json({ error: 'Email o contraseña incorrectos.' });
     }
 
-    const lifetimeMs = parsed.data.rememberMe ? rememberedSessionLifetimeMs : sessionLifetimeMs;
-    const session = createSession(database, account.id, lifetimeMs);
-    setSessionCookies(response, session.sessionToken, session.csrfToken, lifetimeMs);
+    const remembered = parsed.data.rememberMe;
+    const lifetimeMs = remembered ? rememberedSessionLifetimeMs : sessionLifetimeMs;
+    const session = createSession(database, account.id, lifetimeMs, remembered);
+    setSessionCookies(response, session.sessionToken, session.csrfToken, lifetimeMs, remembered);
     if (!account.active) {
       const appeal = database.prepare(`
         SELECT id, reason, status, staff_response AS staffResponse,
@@ -314,8 +381,12 @@ export function createMemberAuth(database) {
     }
 
     try {
-      database.prepare('UPDATE members SET display_name = ?, email = ? WHERE id = ?')
-        .run(parsed.data.displayName, parsed.data.email, request.member.memberId);
+      const update = database.transaction(() => {
+        database.prepare('UPDATE members SET display_name = ?, email = ? WHERE id = ?')
+          .run(parsed.data.displayName, parsed.data.email, request.member.memberId);
+        database.prepare('DELETE FROM member_password_resets WHERE member_id = ?').run(request.member.memberId);
+      });
+      update.immediate();
       return response.json({ member: memberSummary(database, request.member.memberId) });
     } catch (error) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -339,11 +410,91 @@ export function createMemberAuth(database) {
       database.prepare('UPDATE members SET password_hash = ? WHERE id = ?')
         .run(bcrypt.hashSync(parsed.data.newPassword, 12), request.member.memberId);
       database.prepare('DELETE FROM member_sessions WHERE member_id = ?').run(request.member.memberId);
-      return createSession(database, request.member.memberId, lifetimeMs);
+      database.prepare('DELETE FROM member_password_resets WHERE member_id = ?').run(request.member.memberId);
+      return createSession(database, request.member.memberId, lifetimeMs, Boolean(request.member.remembered));
     });
     const session = rotate.immediate();
-    setSessionCookies(response, session.sessionToken, session.csrfToken, lifetimeMs);
+    setSessionCookies(response, session.sessionToken, session.csrfToken, lifetimeMs, Boolean(request.member.remembered));
     return response.json({ status: 'password-updated', csrfToken: session.csrfToken });
+  }
+
+  async function requestPasswordReset(request, response, next) {
+    const parsed = passwordResetRequestSchema.safeParse(request.body);
+    if (!parsed.success) return response.status(400).json({ error: 'Introduce un email válido.' });
+
+    try {
+      const config = passwordResetConfiguration();
+      const resetUrl = new URL('/comunidad/', config.baseUrl);
+      const now = new Date().toISOString();
+      database.prepare('DELETE FROM member_password_resets WHERE expires_at <= ?').run(now);
+
+      const account = database.prepare(`
+        SELECT id, display_name AS displayName, email
+        FROM members WHERE email = ? COLLATE NOCASE AND active = 1
+      `).get(parsed.data.email);
+      if (account) {
+        const token = randomBytes(32).toString('base64url');
+        const expiresAt = new Date(Date.now() + passwordResetLifetimeMs).toISOString();
+        database.prepare(`
+          INSERT INTO member_password_resets (member_id, token_hash, expires_at)
+          VALUES (?, ?, ?)
+          ON CONFLICT(member_id) DO UPDATE SET
+            token_hash = excluded.token_hash,
+            expires_at = excluded.expires_at,
+            created_at = CURRENT_TIMESTAMP
+        `).run(account.id, digest(token), expiresAt);
+        const accountResetUrl = new URL(resetUrl);
+        accountResetUrl.searchParams.set('resetToken', token);
+        accountResetUrl.hash = 'cuenta';
+
+        try {
+          await sendResetEmail({
+            email: account.email,
+            displayName: account.displayName,
+            resetUrl: accountResetUrl.toString(),
+          });
+        } catch (error) {
+          database.prepare('DELETE FROM member_password_resets WHERE member_id = ? AND token_hash = ?')
+            .run(account.id, digest(token));
+          if (error instanceof MemberError) throw error;
+          console.error('Error enviando email de restablecimiento:', error);
+          throw new MemberError(503, 'No se pudo enviar el email de recuperación. Inténtalo más tarde.');
+        }
+      }
+      return response.json({
+        message: 'Si existe una cuenta activa con ese email, recibirá un enlace para restablecer la contraseña.',
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  function resetPassword(request, response, next) {
+    const parsed = passwordResetSchema.safeParse(request.body);
+    if (!parsed.success) return response.status(400).json({ error: 'El enlace no es válido o la contraseña no cumple los requisitos.' });
+
+    try {
+      const passwordHash = bcrypt.hashSync(parsed.data.password, 12);
+      const reset = database.transaction(() => {
+        const entry = database.prepare(`
+          SELECT member_id AS memberId
+          FROM member_password_resets
+          WHERE token_hash = ? AND expires_at > ?
+        `).get(digest(parsed.data.token), new Date().toISOString());
+        if (!entry) return false;
+
+        const updated = database.prepare('UPDATE members SET password_hash = ? WHERE id = ? AND active = 1')
+          .run(passwordHash, entry.memberId);
+        if (!updated.changes) return false;
+        database.prepare('DELETE FROM member_sessions WHERE member_id = ?').run(entry.memberId);
+        database.prepare('DELETE FROM member_password_resets WHERE member_id = ?').run(entry.memberId);
+        return true;
+      });
+      if (!reset.immediate()) return response.status(400).json({ error: 'El enlace ha caducado o ya se ha utilizado. Solicita uno nuevo.' });
+      return response.json({ status: 'password-reset' });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   function submitIdea(request, response) {
@@ -393,6 +544,8 @@ export function createMemberAuth(database) {
   return {
     loginLimiter,
     registrationLimiter,
+    passwordResetRequestLimiter,
+    passwordResetLimiter,
     attachMember,
     requireMember,
     requireMemberSession,
@@ -406,6 +559,8 @@ export function createMemberAuth(database) {
     submitAppeal,
     updateProfile,
     changePassword,
+    requestPasswordReset,
+    resetPassword,
     submitIdea,
     listMemberIdeas,
     moderateIdea,

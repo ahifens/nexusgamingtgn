@@ -15,6 +15,7 @@ const navigationItems = [
   { path: '/local/', label: 'El local', page: 'venue' },
   { path: '/reservar/', label: 'Reservar', page: 'booking' },
 ];
+let passwordFieldCount = 0;
 
 function el(tagName, className = '', text = '') {
   const element = document.createElement(tagName);
@@ -25,6 +26,41 @@ function el(tagName, className = '', text = '') {
 
 function price(cents) {
   return euro.format(cents / 100);
+}
+
+function addPasswordVisibilityToggle(label) {
+  const input = label.querySelector('input[type="password"]');
+  if (!input) return label;
+
+  const field = el('div', 'community-password-field');
+  const fieldLabel = el('label', '', label.firstChild.textContent.trim());
+  input.id = `member-password-${input.name}-${++passwordFieldCount}`;
+  fieldLabel.htmlFor = input.id;
+  const control = el('span', 'password-input-control');
+  const button = el('button', 'password-visibility-toggle');
+  button.type = 'button';
+  button.setAttribute('aria-label', 'Mostrar contraseña');
+  button.setAttribute('aria-pressed', 'false');
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('aria-hidden', 'true');
+  const outline = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  outline.setAttribute('d', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z');
+  const pupil = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  pupil.setAttribute('cx', '12');
+  pupil.setAttribute('cy', '12');
+  pupil.setAttribute('r', '3');
+  icon.append(outline, pupil);
+  button.append(icon);
+  button.addEventListener('click', () => {
+    const showPassword = input.type === 'password';
+    input.type = showPassword ? 'text' : 'password';
+    button.setAttribute('aria-label', showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    button.setAttribute('aria-pressed', String(showPassword));
+  });
+  control.append(input, button);
+  field.append(fieldLabel, control);
+  return field;
 }
 
 function dateLabel(dateString, options = {}) {
@@ -432,6 +468,7 @@ function renderCommunity(data) {
   const section = el('section', 'page-content-section community-section');
   const layout = el('div', 'page-width community-layout');
   const account = el('section', 'community-account');
+  account.id = 'cuenta';
   account.setAttribute('aria-labelledby', 'community-account-title');
   const accountHeading = el('div', 'community-heading');
   accountHeading.append(el('p', 'eyebrow', 'TU CUENTA'), el('h2', '', 'Entra en la comunidad.'));
@@ -446,7 +483,11 @@ function renderCommunity(data) {
   const loginForm = el('form', 'community-form');
   loginForm.id = 'member-login-form';
   loginForm.append(inputField('Email', 'email', 'email', { autocomplete: 'email' }).label);
-  loginForm.append(inputField('Contraseña', 'password', 'password', { autocomplete: 'current-password' }).label);
+  const loginPasswordField = inputField('Contraseña', 'password', 'password', { autocomplete: 'current-password' });
+  loginForm.append(addPasswordVisibilityToggle(loginPasswordField.label));
+  const forgotPasswordButton = el('button', 'text-button password-forgot-link', '¿Has olvidado tu contraseña?');
+  forgotPasswordButton.type = 'button';
+  loginForm.append(forgotPasswordButton);
   const rememberLabel = el('label', 'community-consent remember-member-row');
   const remember = el('input');
   remember.type = 'checkbox';
@@ -463,7 +504,8 @@ function renderCommunity(data) {
   registerForm.hidden = true;
   registerForm.append(inputField('Nombre público', 'displayName', 'text', { autocomplete: 'name', minlength: 2, maxlength: 80 }).label);
   registerForm.append(inputField('Email', 'email', 'email', { autocomplete: 'email' }).label);
-  registerForm.append(inputField('Contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 }).label);
+  const registerPasswordField = inputField('Contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 });
+  registerForm.append(addPasswordVisibilityToggle(registerPasswordField.label));
   const privacyLabel = el('label', 'community-consent');
   const privacyCheck = el('input');
   privacyCheck.type = 'checkbox';
@@ -475,6 +517,38 @@ function renderCommunity(data) {
   registerForm.append(privacyLabel, registerButton, el('p', 'form-message', ''));
   registerForm.lastElementChild.id = 'member-register-message';
   authView.append(authTabs, loginForm, registerForm);
+
+  const passwordResetRequestForm = el('form', 'community-form password-recovery-form');
+  passwordResetRequestForm.hidden = true;
+  passwordResetRequestForm.append(el('h3', '', 'Restablecer contraseña'));
+  passwordResetRequestForm.append(inputField('Email de tu cuenta', 'email', 'email', { autocomplete: 'email' }).label);
+  const passwordResetRequestSubmit = el('button', 'button button-dark', 'Enviar enlace');
+  passwordResetRequestSubmit.type = 'submit';
+  const passwordResetRequestMessage = el('p', 'form-message', '');
+  passwordResetRequestMessage.setAttribute('role', 'status');
+  passwordResetRequestForm.append(passwordResetRequestSubmit, passwordResetRequestMessage);
+  const backToLoginButton = el('button', 'text-button', 'Volver a iniciar sesión');
+  backToLoginButton.type = 'button';
+  passwordResetRequestForm.append(backToLoginButton);
+
+  const passwordResetForm = el('form', 'community-form password-recovery-form');
+  passwordResetForm.hidden = true;
+  passwordResetForm.append(el('h3', '', 'Elige una nueva contraseña'));
+  const resetToken = el('input');
+  resetToken.type = 'hidden';
+  resetToken.name = 'token';
+  passwordResetForm.append(resetToken);
+  const newPasswordField = inputField('Nueva contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 });
+  passwordResetForm.append(addPasswordVisibilityToggle(newPasswordField.label));
+  const confirmPasswordField = inputField('Repite la nueva contraseña', 'confirmPassword', 'password', { autocomplete: 'new-password', minlength: 12 });
+  passwordResetForm.append(addPasswordVisibilityToggle(confirmPasswordField.label));
+  const passwordResetSubmit = el('button', 'button button-dark', 'Guardar nueva contraseña');
+  passwordResetSubmit.type = 'submit';
+  const passwordResetMessage = el('p', 'form-message', '');
+  passwordResetMessage.setAttribute('role', 'status');
+  passwordResetForm.append(passwordResetSubmit, passwordResetMessage);
+  passwordResetForm.append(backToLoginButton.cloneNode(true));
+  authView.append(passwordResetRequestForm, passwordResetForm);
 
   const profile = el('div', 'community-profile');
   profile.hidden = true;
@@ -498,7 +572,8 @@ function renderCommunity(data) {
   profileForm.id = 'member-profile-form';
   profileForm.append(inputField('Nombre público', 'displayName', 'text', { autocomplete: 'name', minlength: 2, maxlength: 80 }).label);
   profileForm.append(inputField('Email', 'email', 'email', { autocomplete: 'email', maxlength: 254 }).label);
-  profileForm.append(inputField('Contraseña actual para guardar cambios', 'currentPassword', 'password', { autocomplete: 'current-password' }).label);
+  const profilePasswordField = inputField('Contraseña actual para guardar cambios', 'currentPassword', 'password', { autocomplete: 'current-password' });
+  profileForm.append(addPasswordVisibilityToggle(profilePasswordField.label));
   const profileSave = el('button', 'button button-dark', 'Guardar perfil');
   profileSave.type = 'submit';
   profileForm.append(profileSave, el('p', 'form-message', ''));
@@ -506,9 +581,12 @@ function renderCommunity(data) {
 
   const passwordForm = el('form', 'community-form account-settings-form');
   passwordForm.id = 'member-password-form';
-  passwordForm.append(inputField('Contraseña antigua', 'currentPassword', 'password', { autocomplete: 'current-password' }).label);
-  passwordForm.append(inputField('Nueva contraseña · mínimo 12 caracteres', 'newPassword', 'password', { autocomplete: 'new-password', minlength: 12 }).label);
-  passwordForm.append(inputField('Repite la nueva contraseña', 'confirmPassword', 'password', { autocomplete: 'new-password', minlength: 12 }).label);
+  const oldPasswordField = inputField('Contraseña antigua', 'currentPassword', 'password', { autocomplete: 'current-password' });
+  passwordForm.append(addPasswordVisibilityToggle(oldPasswordField.label));
+  const changePasswordField = inputField('Nueva contraseña · mínimo 12 caracteres', 'newPassword', 'password', { autocomplete: 'new-password', minlength: 12 });
+  passwordForm.append(addPasswordVisibilityToggle(changePasswordField.label));
+  const confirmChangedPasswordField = inputField('Repite la nueva contraseña', 'confirmPassword', 'password', { autocomplete: 'new-password', minlength: 12 });
+  passwordForm.append(addPasswordVisibilityToggle(confirmChangedPasswordField.label));
   const passwordSave = el('button', 'button button-dark', 'Cambiar contraseña');
   passwordSave.type = 'submit';
   passwordForm.append(passwordSave, el('p', 'form-message', ''));
@@ -561,14 +639,87 @@ function renderCommunity(data) {
   main.append(section);
 
   let csrfToken = '';
+  const resetTokenFromUrl = new URLSearchParams(window.location.search).get('resetToken');
   const setAuthTab = (register) => {
+    authTabs.hidden = false;
     loginForm.hidden = register;
     registerForm.hidden = !register;
+    passwordResetRequestForm.hidden = true;
+    passwordResetForm.hidden = true;
     loginTab.classList.toggle('is-active', !register);
     registerTab.classList.toggle('is-active', register);
   };
   loginTab.addEventListener('click', () => setAuthTab(false));
   registerTab.addEventListener('click', () => setAuthTab(true));
+  forgotPasswordButton.addEventListener('click', () => {
+    authTabs.hidden = true;
+    loginForm.hidden = true;
+    registerForm.hidden = true;
+    passwordResetRequestForm.hidden = false;
+    passwordResetRequestForm.elements.email.value = loginForm.elements.email.value;
+    passwordResetRequestMessage.textContent = '';
+  });
+  passwordResetRequestForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    passwordResetRequestMessage.textContent = 'Enviando solicitud…';
+    passwordResetRequestSubmit.disabled = true;
+    try {
+      const response = await fetch('/api/members/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email: passwordResetRequestForm.elements.email.value }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? 'No se pudo solicitar el restablecimiento.');
+      passwordResetRequestMessage.textContent = result.message;
+    } catch (error) {
+      passwordResetRequestMessage.textContent = error.message;
+    } finally {
+      passwordResetRequestSubmit.disabled = false;
+    }
+  });
+  passwordResetForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(passwordResetForm).entries());
+    if (values.password !== values.confirmPassword) {
+      passwordResetMessage.textContent = 'Las contraseñas nuevas no coinciden.';
+      return;
+    }
+    passwordResetMessage.textContent = 'Guardando nueva contraseña…';
+    passwordResetSubmit.disabled = true;
+    try {
+      const response = await fetch('/api/members/password-reset/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ token: values.token, password: values.password }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? 'No se pudo restablecer la contraseña.');
+      passwordResetForm.reset();
+      setAuthTab(false);
+      document.querySelector('#member-auth-message').textContent = 'Contraseña restablecida. Ya puedes iniciar sesión.';
+      window.history.replaceState(null, '', `${window.location.pathname}#cuenta`);
+    } catch (error) {
+      passwordResetMessage.textContent = error.message;
+    } finally {
+      passwordResetSubmit.disabled = false;
+    }
+  });
+  passwordResetRequestForm.querySelector('.text-button').addEventListener('click', () => setAuthTab(false));
+  passwordResetForm.querySelector('.text-button').addEventListener('click', () => setAuthTab(false));
+
+  if (resetTokenFromUrl) {
+    resetToken.value = resetTokenFromUrl;
+    authTabs.hidden = true;
+    loginForm.hidden = true;
+    registerForm.hidden = true;
+    passwordResetRequestForm.hidden = true;
+    passwordResetForm.hidden = false;
+    window.history.replaceState(null, '', `${window.location.pathname}#cuenta`);
+    account.scrollIntoView({ block: 'start' });
+  }
 
   const loadModeration = async () => {
     const response = await fetch('/api/members/ideas', { credentials: 'same-origin' });
@@ -612,6 +763,7 @@ function renderCommunity(data) {
       if (!response.ok) throw new Error(result.error ?? 'No se pudo iniciar sesión.');
       csrfToken = result.csrfToken;
       showMember(result.member);
+      await syncMemberAccessLink(document.querySelector('.nav-account'));
     } catch (error) {
       message.textContent = error.message;
     }
@@ -634,6 +786,7 @@ function renderCommunity(data) {
       if (!response.ok) throw new Error(result.error ?? 'No se pudo crear la cuenta.');
       csrfToken = result.csrfToken;
       showMember(result.member);
+      await syncMemberAccessLink(document.querySelector('.nav-account'));
     } catch (error) {
       message.textContent = error.message;
     }
@@ -724,15 +877,18 @@ function renderCommunity(data) {
       profile.hidden = true;
       ideaForm.hidden = true;
       authView.hidden = false;
+      await syncMemberAccessLink(document.querySelector('.nav-account'));
     }
   });
 
-  fetch('/api/members/session', { credentials: 'same-origin' }).then(async (response) => {
-    if (!response.ok) return;
-    const result = await response.json();
-    csrfToken = result.csrfToken;
-    showMember(result.member);
-  }).catch(() => {});
+  if (!resetTokenFromUrl) {
+    fetch('/api/members/session', { credentials: 'same-origin' }).then(async (response) => {
+      if (!response.ok) return;
+      const result = await response.json();
+      csrfToken = result.csrfToken;
+      showMember(result.member);
+    }).catch(() => {});
+  }
 }
 
 function inputField(labelText, name, type, options = {}) {
@@ -1029,7 +1185,11 @@ function renderVenue(data) {
   privacyDetails.querySelector('a').href = `mailto:${data.business.email}`;
   const legalDetails = el('details');
   legalDetails.append(el('summary', '', 'Aviso legal'), el('p', '', 'Titularidad, datos registrales y dirección definitiva pendientes de confirmar por el negocio.'));
-  legalGrid.append(privacyDetails, legalDetails, el('p', '', 'Esta web no utiliza cookies no esenciales.'));
+  legalGrid.append(
+    privacyDetails,
+    legalDetails,
+    el('p', '', 'Solo utilizamos cookies técnicas necesarias para mantener las sesiones y proteger los formularios (lg_member_session, lg_member_csrf, lg_session y lg_csrf). No se usan para publicidad ni seguimiento. Al elegir «Recordarme», la sesión de miembro se conserva en este dispositivo durante el plazo indicado; puedes cerrar sesión para eliminarla.'),
+  );
   legal.append(legalGrid);
   main.append(legal);
 }

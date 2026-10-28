@@ -36,6 +36,10 @@ Rutas públicas: `/`, `/servicios/`, `/tarifas/`, `/torneos/`, `/noticias/`, `/c
 
 `.env.example` documenta las variables disponibles. `DATABASE_PATH` admite una ruta relativa a la raíz del proyecto; los ficheros SQLite se guardan en `data/`, que no se versiona. La zona horaria inicial es `Europe/Madrid`.
 
+Las cuentas de miembros usan cookies técnicas `HttpOnly`, `SameSite=Strict` y `Secure` en producción. Sin marcar «Recordarme», la cookie dura hasta cerrar el navegador y la sesión caduca como máximo a las 8 horas; al marcarlo, la cookie mantiene el acceso durante `MEMBER_REMEMBER_DAYS` (30 días por defecto, configurable entre 1 y 365). La cookie CSRF asociada mantiene el mismo plazo. Cerrar sesión elimina ambas cookies. No se utilizan cookies publicitarias ni de seguimiento.
+
+Para habilitar el restablecimiento de contraseñas de miembros, configura `PUBLIC_BASE_URL` y las variables SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` y `SMTP_FROM`). En producción, `PUBLIC_BASE_URL` debe usar HTTPS. El enlace enviado caduca en una hora y solo se puede utilizar una vez; al cambiar la contraseña se cierran las sesiones existentes.
+
 Para crear un administrador aleatorio, ejecuta `npm run admin:create` y guarda las credenciales que imprime: la contraseña no se almacena en claro y no puede recuperarse después. También puedes configurar `ADMIN_USERNAME` y `ADMIN_PASSWORD` en `.env` y ejecutar `npm run db:setup`; exige 12 caracteres o más. En desarrollo se permite `admin/admin` solo como clave bootstrap, con cambio obligatorio en el primer acceso; no se permite en producción. El hash se genera con bcrypt y la sesión utiliza cookies `httpOnly` más token CSRF. En producción, sirve el sitio exclusivamente por HTTPS.
 
 ## Datos de demostración
@@ -67,6 +71,8 @@ Recibe `code` y `token`. Solo cancela reservas activas con al menos 24 horas de 
 ### `POST /api/members/register`, `POST /api/members/login`, `GET /api/members/session`, `POST /api/members/logout`
 
 Registro público con nombre, email único, contraseña de al menos 12 caracteres y consentimiento. Los usuarios nuevos tienen rol `user`; el servidor almacena bcrypt y usa sesión `httpOnly` con CSRF. Una sesión enlaza la reserva al email de la cuenta.
+
+`POST /api/members/password-reset` solicita un enlace por email y `POST /api/members/password-reset/confirm` lo canjea por una contraseña nueva. La respuesta de solicitud no revela si el email está registrado; el token se almacena como hash, caduca en una hora y solo se puede utilizar una vez.
 
 ### `POST /api/members/ideas`, `GET /api/members/ideas`, `PATCH /api/members/ideas/:id`
 

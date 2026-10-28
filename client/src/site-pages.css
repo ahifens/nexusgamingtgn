@@ -61,8 +61,15 @@
 .community-form { display: grid; gap: 13px; }
 .community-form[hidden], .community-profile[hidden], .idea-form[hidden] { display: none; }
 .community-form label, .idea-form label { display: grid; gap: 6px; color: #45443d; font-size: 11px; font-weight: 700; }
+.community-password-field { display: grid; gap: 6px; }
 .community-form input:not([type="checkbox"]), .idea-form input, .idea-form textarea { width: 100%; min-height: 43px; padding: 10px; border: 1px solid #aaa7b0; border-radius: 0; color: var(--ink); background: #f7f6f1; font: 12px 'Space Grotesk', sans-serif; }
 .community-form input:focus, .idea-form input:focus, .idea-form textarea:focus { outline: 2px solid #674392; outline-offset: 2px; }
+.password-input-control { display: flex; width: 100%; align-items: stretch; }
+.password-input-control input { flex: 1; min-width: 0; }
+.password-visibility-toggle { display: grid; width: 44px; flex: 0 0 44px; place-items: center; border: 1px solid #aaa7b0; border-left: 0; color: #51356e; background: #f7f6f1; cursor: pointer; }
+.password-visibility-toggle svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.password-forgot-link { justify-self: start; padding: 0; color: #51356e; font-size: 11px; }
+.password-recovery-form h3 { margin: 0; color: #432d61; font-size: 17px; }
 .community-consent { grid-template-columns: 17px 1fr !important; align-items: start; gap: 9px !important; font-weight: 400 !important; line-height: 1.5; }
 .community-consent input { width: 16px; height: 16px; margin: 1px 0 0; accent-color: #674392; }
 .community-form .button { min-height: 44px; justify-self: start; border: 0; cursor: pointer; }

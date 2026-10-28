@@ -4,10 +4,9 @@ body.auth-checking > * { visibility: hidden; }
 .member-ban-logout:hover { border-color: #c5a1f2; color: #e0ccfa; }
 .member-ban-logout:focus-visible, .member-appeal-submit:focus-visible, .member-appeal-form textarea:focus-visible { outline: 2px solid #c5a1f2; outline-offset: 3px; }
 .member-ban-content { width: min(100%, 560px); padding: 34px; border: 1px solid #51445d; background: #21182c; }
-.member-ban-eyebrow { margin: 0; color: #c5a1f2; font: 10px 'DM Mono', monospace; }
-.member-ban-content h1 { margin: 18px 0 10px; font-size: 40px; line-height: 1; }
-.member-ban-name { margin: 0; color: #d7c3ec; font-size: 14px; }
-.member-ban-copy { margin: 18px 0 22px; color: #d2cad9; font-size: 13px; line-height: 1.65; }
+.member-ban-content h1 { margin: 0 0 25px; font-size: 40px; line-height: 1; }
+.member-ban-appeal { padding: 20px; border: 1px solid #51445d; background: #2a2034; }
+.member-ban-appeal h2 { margin: 0 0 17px; color: #ddc9fb; font-size: 19px; }
 .member-appeal-form { display: grid; gap: 12px; }
 .member-appeal-form label { color: #eee8f4; font-size: 12px; font-weight: 600; }
 .member-appeal-form textarea { width: 100%; min-height: 130px; padding: 12px; border: 1px solid #655771; border-radius: 0; color: #f7f4fa; background: #17111f; font: 13px/1.55 'Space Grotesk', sans-serif; resize: vertical; }
@@ -25,4 +24,5 @@ body.auth-checking > * { visibility: hidden; }
   .member-ban-logout { top: 14px; right: 14px; }
   .member-ban-content { padding: 23px 18px; }
   .member-ban-content h1 { font-size: 34px; }
+  .member-ban-appeal { padding: 16px; }
 }

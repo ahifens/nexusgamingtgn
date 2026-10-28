@@ -1,5 +1,6 @@
 import './admin.css';
 import { setupAdminManagement } from './admin-management.js';
+import { enforceMemberBanGate } from './member-gate.js';
 
 let csrfToken = '';
 let editingId = null;
@@ -213,16 +214,19 @@ document.querySelector('#logout-button').addEventListener('click', async () => {
   }
 });
 
-try {
-  const session = await request('/api/admin/session');
-  csrfToken = session.csrfToken;
-  if (session.mustChangePassword) {
-    passwordChangeForm.dataset.username = session.user.username;
-    showPasswordChange();
-  } else {
-    showDashboard(session.user);
+document.body.classList.add('auth-checking');
+if (!await enforceMemberBanGate()) {
+  try {
+    const session = await request('/api/admin/session');
+    csrfToken = session.csrfToken;
+    if (session.mustChangePassword) {
+      passwordChangeForm.dataset.username = session.user.username;
+      showPasswordChange();
+    } else {
+      showDashboard(session.user);
+    }
+  } catch {
+    loginView.hidden = false;
+    dashboard.hidden = true;
   }
-} catch {
-  loginView.hidden = false;
-  dashboard.hidden = true;
 }

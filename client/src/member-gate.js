@@ -35,29 +35,34 @@ export function renderMemberBanGate(member, csrfToken, appeal = null) {
 
   const content = element('section', 'member-ban-content');
   content.setAttribute('aria-labelledby', 'ban-title');
-  content.append(element('p', 'member-ban-eyebrow', 'ACCESO A LA COMUNIDAD'));
-  content.append(element('h1', '', 'Estás baneado'));
-  content.querySelector('h1').id = 'ban-title';
-  content.append(element('p', 'member-ban-name', member.displayName ?? ''));
-  content.append(element('p', 'member-ban-copy', 'Tu cuenta no puede acceder a la web mientras el equipo revisa el caso. Si crees que se trata de un error, puedes enviar una apelación.'));
+  const title = element('h1', '', 'Estás baneado');
+  title.id = 'ban-title';
+  content.append(title);
 
+  const appealSection = element('section', 'member-ban-appeal');
+  appealSection.setAttribute('aria-labelledby', 'appeal-title');
+  const appealTitle = element('h2', '', 'Apelación');
+  appealTitle.id = 'appeal-title';
+  appealSection.append(appealTitle);
   if (appeal?.status === 'pending') {
     const pending = element('div', 'appeal-state');
     pending.append(element('strong', '', 'Apelación en revisión'));
     pending.append(element('p', '', appeal.reason));
-    pending.append(element('small', '', 'El equipo revisará tu solicitud. Vuelve a iniciar sesión más tarde para consultar el estado.'));
-    content.append(pending);
+    pending.append(element('small', '', 'El equipo revisará tu solicitud.'));
+    appealSection.append(pending);
   } else {
     const appealForm = element('form', 'member-appeal-form');
-    appealForm.append(element('label', '', 'Cuéntanos por qué solicitas una revisión'));
+    const reasonLabel = element('label', '', 'Cuéntanos por qué solicitas una revisión');
     const reason = element('textarea');
+    reason.id = 'member-appeal-reason';
     reason.name = 'reason';
     reason.minLength = 30;
     reason.maxLength = 2000;
     reason.rows = 6;
     reason.required = true;
     reason.placeholder = 'Explica el contexto para que el equipo pueda revisar tu caso…';
-    appealForm.append(reason);
+    reasonLabel.htmlFor = reason.id;
+    appealForm.append(reasonLabel, reason);
     const submit = element('button', 'member-appeal-submit', 'Enviar apelación');
     submit.type = 'submit';
     const feedback = element('p', 'member-appeal-feedback', '');
@@ -86,9 +91,10 @@ export function renderMemberBanGate(member, csrfToken, appeal = null) {
         submit.disabled = false;
       }
     });
-    content.append(appealForm);
+    appealSection.append(appealForm);
   }
 
+  content.append(appealSection);
   gate.append(logout, content);
   document.body.replaceChildren(gate);
 }
@@ -112,6 +118,10 @@ export async function enforceMemberBanGate() {
 
 export async function syncMemberAccessLink(link) {
   if (!link) return;
+  link.textContent = 'Entrar / registrarse';
+  link.removeAttribute('aria-label');
+  link.onclick = null;
+
   try {
     const response = await fetch('/api/members/session', { credentials: 'same-origin' });
     if (!response.ok) return;
@@ -119,7 +129,7 @@ export async function syncMemberAccessLink(link) {
     if (session.status === 'banned') return;
     link.textContent = 'Cerrar sesión';
     link.setAttribute('aria-label', `Cerrar sesión de ${session.member.displayName}`);
-    link.addEventListener('click', async (event) => {
+    link.onclick = async (event) => {
       event.preventDefault();
       link.setAttribute('aria-busy', 'true');
       try {
@@ -131,8 +141,8 @@ export async function syncMemberAccessLink(link) {
       } finally {
         window.location.assign('/');
       }
-    });
+    };
   } catch {
-    link.textContent = 'Entrar / registrarse';
+    link.onclick = null;
   }
 }

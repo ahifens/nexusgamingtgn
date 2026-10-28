@@ -7,6 +7,7 @@ import { seedDatabase } from '../server/src/db/seed.js';
 let database;
 let server;
 let baseUrl;
+let resetEmail;
 
 async function request(path, { method = 'GET', body, cookie, csrfToken } = {}) {
   const headers = { Accept: 'application/json' };
@@ -29,7 +30,12 @@ beforeEach(async () => {
   database = createDatabase(':memory:');
   migrateDatabase(database);
   seedDatabase(database);
-  server = createApp(database).listen(0);
+  resetEmail = null;
+  server = createApp(database, {
+    sendResetEmail: async (email) => {
+      resetEmail = email;
+    },
+  }).listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
   baseUrl = `http://127.0.0.1:${server.address().port}`;
 });
@@ -129,6 +135,8 @@ describe('cuentas, puntos y sugerencias', () => {
     expect(blockedPublic.response.status).toBe(403);
     const blockedBooking = await request('/api/reservations', { method: 'POST', cookie, body: {} });
     expect(blockedBooking.response.status).toBe(403);
+    const blockedAdmin = await request('/api/admin/session', { cookie });
+    expect(blockedAdmin.response.status).toBe(403);
 
     const appeal = await request('/api/members/appeals', {
       method: 'POST',
@@ -157,6 +165,7 @@ describe('cuentas, puntos y sugerencias', () => {
       method: 'POST',
       body: { displayName: 'Cuenta Recordada', email: 'remember@example.test', password: 'Clave-segura-1234', consent: true },
     });
+    expect(registration.response.headers.getSetCookie().join(';')).not.toContain('Max-Age=');
     const registrationCookie = sessionCookies(registration.response);
     await request('/api/members/logout', {
       method: 'POST',
@@ -164,12 +173,30 @@ describe('cuentas, puntos y sugerencias', () => {
       csrfToken: registration.data.csrfToken,
     });
 
+    const temporaryLogin = await request('/api/members/login', {
+      method: 'POST',
+      body: { email: 'remember@example.test', password: 'Clave-segura-1234', rememberMe: false },
+    });
+    expect(temporaryLogin.response.status).toBe(200);
+    const temporaryCookies = temporaryLogin.response.headers.getSetCookie().join(';');
+    expect(temporaryCookies).not.toContain('Max-Age=');
+    expect(temporaryCookies).toContain('HttpOnly');
+    expect(temporaryCookies).toContain('SameSite=Strict');
+    expect(database.prepare('SELECT remembered FROM member_sessions').get().remembered).toBe(0);
+    await request('/api/members/logout', {
+      method: 'POST',
+      cookie: sessionCookies(temporaryLogin.response),
+      csrfToken: temporaryLogin.data.csrfToken,
+    });
+
     const login = await request('/api/members/login', {
       method: 'POST',
       body: { email: 'remember@example.test', password: 'Clave-segura-1234', rememberMe: true },
     });
     expect(login.response.status).toBe(200);
-    expect(login.response.headers.getSetCookie().join(';')).toContain('Max-Age=2592000');
+    const rememberedCookies = login.response.headers.getSetCookie().join(';');
+    expect(rememberedCookies).toContain('Max-Age=2592000');
+    expect(database.prepare('SELECT remembered FROM member_sessions').get().remembered).toBe(1);
     const cookie = sessionCookies(login.response);
 
     const wrongPassword = await request('/api/members/password', {
@@ -184,6 +211,8 @@ describe('cuentas, puntos y sugerencias', () => {
     });
     expect(changed.response.status).toBe(200);
     expect(changed.data.status).toBe('password-updated');
+    expect(changed.response.headers.getSetCookie().join(';')).toContain('Max-Age=');
+    expect(database.prepare('SELECT remembered FROM member_sessions').get().remembered).toBe(1);
 
     const oldPasswordLogin = await request('/api/members/login', {
       method: 'POST',
@@ -195,6 +224,109 @@ describe('cuentas, puntos y sugerencias', () => {
       body: { email: 'remember@example.test', password: 'Nueva-clave-segura-5678' },
     });
     expect(newPasswordLogin.response.status).toBe(200);
+  });
+
+  it('restablece la contraseña con un enlace de un solo uso y revoca las sesiones anteriores', async () => {
+    const configKeys = ['PUBLIC_BASE_URL', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'];
+    const previousConfig = new Map(configKeys.map((key) => [key, process.env[key]]));
+    Object.assign(process.env, {
+      PUBLIC_BASE_URL: 'https://gaming.example.test',
+      SMTP_HOST: 'smtp.example.test',
+      SMTP_PORT: '587',
+      SMTP_SECURE: 'false',
+      SMTP_USER: 'test-user',
+      SMTP_PASSWORD: 'test-password',
+      SMTP_FROM: 'Local Gaming <no-reply@example.test>',
+    });
+    try {
+      const registration = await request('/api/members/register', {
+        method: 'POST',
+        body: { displayName: 'Cuenta Recuperable', email: 'reset@example.test', password: 'Clave-segura-1234', consent: true },
+      });
+      const oldCookie = sessionCookies(registration.response);
+
+      const unknownEmail = await request('/api/members/password-reset', {
+        method: 'POST',
+        body: { email: 'inexistente@example.test' },
+      });
+      expect(unknownEmail.response.status).toBe(200);
+      expect(unknownEmail.data.message).toContain('Si existe una cuenta activa');
+      expect(resetEmail).toBeNull();
+
+      const resetRequest = await request('/api/members/password-reset', {
+        method: 'POST',
+        body: { email: 'reset@example.test' },
+      });
+      expect(resetRequest.response.status).toBe(200);
+      expect(resetEmail).toMatchObject({ email: 'reset@example.test', displayName: 'Cuenta Recuperable' });
+
+      const resetUrl = new URL(resetEmail.resetUrl);
+      expect(resetUrl.origin).toBe('https://gaming.example.test');
+      const token = resetUrl.searchParams.get('resetToken');
+      expect(token).toBeTruthy();
+      const storedToken = database.prepare('SELECT token_hash AS tokenHash FROM member_password_resets').get();
+      expect(storedToken.tokenHash).not.toBe(token);
+
+      const reset = await request('/api/members/password-reset/confirm', {
+        method: 'POST',
+        body: { token, password: 'Nueva-clave-segura-5678' },
+      });
+      expect(reset.response.status).toBe(200);
+      expect(reset.data.status).toBe('password-reset');
+      expect((await request('/api/members/session', { cookie: oldCookie })).response.status).toBe(401);
+
+      const reusedToken = await request('/api/members/password-reset/confirm', {
+        method: 'POST',
+        body: { token, password: 'Otra-clave-segura-1234' },
+      });
+      expect(reusedToken.response.status).toBe(400);
+
+      const oldPasswordLogin = await request('/api/members/login', {
+        method: 'POST',
+        body: { email: 'reset@example.test', password: 'Clave-segura-1234' },
+      });
+      expect(oldPasswordLogin.response.status).toBe(401);
+      const newPasswordLogin = await request('/api/members/login', {
+        method: 'POST',
+        body: { email: 'reset@example.test', password: 'Nueva-clave-segura-5678' },
+      });
+      expect(newPasswordLogin.response.status).toBe(200);
+    } finally {
+      configKeys.forEach((key) => {
+        const previousValue = previousConfig.get(key);
+        if (previousValue === undefined) delete process.env[key];
+        else process.env[key] = previousValue;
+      });
+    }
+  });
+
+  it('informa si SMTP no está configurado sin revelar si el email existe', async () => {
+    const configKeys = ['PUBLIC_BASE_URL', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'];
+    const previousConfig = new Map(configKeys.map((key) => [key, process.env[key]]));
+    configKeys.forEach((key) => delete process.env[key]);
+    try {
+      await request('/api/members/register', {
+        method: 'POST',
+        body: { displayName: 'Cuenta SMTP', email: 'smtp@example.test', password: 'Clave-segura-1234', consent: true },
+      });
+
+      const existingEmail = await request('/api/members/password-reset', {
+        method: 'POST',
+        body: { email: 'smtp@example.test' },
+      });
+      const unknownEmail = await request('/api/members/password-reset', {
+        method: 'POST',
+        body: { email: 'inexistente@example.test' },
+      });
+      expect(existingEmail.response.status).toBe(503);
+      expect(unknownEmail.response.status).toBe(503);
+      expect(existingEmail.data.error).toBe(unknownEmail.data.error);
+    } finally {
+      configKeys.forEach((key) => {
+        const previousValue = previousConfig.get(key);
+        if (previousValue !== undefined) process.env[key] = previousValue;
+      });
+    }
   });
 });
 

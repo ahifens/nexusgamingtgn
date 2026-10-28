@@ -21,10 +21,10 @@ import {
 
 const projectRoot = fileURLToPath(new URL('../..', import.meta.url));
 
-export function createApp(database) {
+export function createApp(database, { sendResetEmail } = {}) {
   const app = express();
   const auth = createAdminAuth(database);
-  const memberAuth = createMemberAuth(database);
+  const memberAuth = createMemberAuth(database, { sendResetEmail });
   const availabilityLimiter = rateLimit({
     windowMs: 60 * 1000,
     limit: 60,
@@ -116,6 +116,8 @@ export function createApp(database) {
 
   app.post('/api/members/register', memberAuth.registrationLimiter, memberAuth.register);
   app.post('/api/members/login', memberAuth.loginLimiter, memberAuth.login);
+  app.post('/api/members/password-reset', memberAuth.passwordResetRequestLimiter, memberAuth.requestPasswordReset);
+  app.post('/api/members/password-reset/confirm', memberAuth.passwordResetLimiter, memberAuth.resetPassword);
   app.get('/api/members/session', memberAuth.session);
   app.post('/api/members/logout', memberAuth.requireMemberSession, memberAuth.requireCsrf, memberAuth.logout);
   app.post('/api/members/appeals', memberAuth.requireMemberSession, memberAuth.requireBannedMember, memberAuth.requireCsrf, memberAuth.submitAppeal);
