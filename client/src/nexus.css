@@ -163,14 +163,15 @@ section { padding-block: 100px; border-bottom: 1px solid var(--line); }
 .rewards { background: #17141b; }
 .community-grid { display: grid; grid-template-columns: 1.15fr .85fr; align-items: start; gap: 20px; }
 .community-account-card { min-width: 0; }
-.client-auth-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.client-auth-form { min-width: 0; display: grid; align-content: start; gap: 12px; padding: 18px; border: 1px solid var(--line); background: var(--panel); }
-.client-auth-form h3, .idea-form h3 { margin: 0 0 2px; font: 700 25px/1 var(--display); text-transform: uppercase; }
-.client-auth-form .button, .idea-form .button { justify-self: start; }
-.client-auth-form .field { min-width: 0; }
-.client-auth-form .field input { min-width: 0; }
+.client-auth-links { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; }
+.client-auth-links p { flex: 1 1 100%; margin: 0 0 5px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.client-auth-links .button { justify-self: start; text-decoration: none; }
+.button-outline { border: 1px solid var(--line); color: var(--paper); background: transparent; }
+.button-outline:hover { color: var(--ink); background: var(--paper); }
+.idea-form h3 { margin: 0 0 2px; font: 700 25px/1 var(--display); text-transform: uppercase; }
+.idea-form .button { justify-self: start; }
 .remember-row { display: flex; align-items: start; gap: 8px; color: #d3d5cc; font-size: 11px; line-height: 1.5; }
-.client-auth-form[hidden], .community-signed-in[hidden], .idea-form[hidden] { display: none; }
+.client-auth-links[hidden], .community-signed-in[hidden], .idea-form[hidden] { display: none; }
 .community-signed-in { padding: 22px; border: 1px solid var(--line); background: var(--panel); }
 .community-signed-in h3 { margin: 7px 0; font: 700 29px var(--display); text-transform: uppercase; }
 .community-signed-in > p { color: var(--muted); }
@@ -234,7 +235,6 @@ section { padding-block: 100px; border-bottom: 1px solid var(--line); }
   .section-head p { margin-top: 14px; }
   .services-grid { gap: 8px; }
   .news-grid { grid-template-columns: 1fr; }
-  .client-auth-grid { grid-template-columns: 1fr; }
   .service { min-height: 240px; }
   .service-content { padding: 14px; }
   .service h3 { font-size: 23px; }

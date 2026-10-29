@@ -108,7 +108,7 @@ function createHeader(business, currentPage) {
     navigation.append(link);
   });
   const accountLink = el('a', 'nav-account', 'Entrar / registrarse');
-  accountLink.href = '/comunidad/#cuenta';
+  accountLink.href = '/cuenta/entrar/';
   navigation.append(accountLink);
   syncMemberAccessLink(accountLink);
   toggle.addEventListener('click', () => {
@@ -475,80 +475,16 @@ function renderCommunity(data) {
   account.append(accountHeading);
 
   const authView = el('div', 'community-auth');
-  const authTabs = el('div', 'community-auth-tabs');
-  const loginTab = el('button', 'auth-tab is-active', 'Iniciar sesión');
-  const registerTab = el('button', 'auth-tab', 'Crear cuenta');
-  loginTab.type = registerTab.type = 'button';
-  authTabs.append(loginTab, registerTab);
-  const loginForm = el('form', 'community-form');
-  loginForm.id = 'member-login-form';
-  loginForm.append(inputField('Email', 'email', 'email', { autocomplete: 'email' }).label);
-  const loginPasswordField = inputField('Contraseña', 'password', 'password', { autocomplete: 'current-password' });
-  loginForm.append(addPasswordVisibilityToggle(loginPasswordField.label));
-  const forgotPasswordButton = el('button', 'text-button password-forgot-link', '¿Has olvidado tu contraseña?');
-  forgotPasswordButton.type = 'button';
-  loginForm.append(forgotPasswordButton);
-  const rememberLabel = el('label', 'community-consent remember-member-row');
-  const remember = el('input');
-  remember.type = 'checkbox';
-  remember.name = 'rememberMe';
-  rememberLabel.append(remember, el('span', '', 'Recordarme en este dispositivo durante 30 días'));
-  loginForm.append(rememberLabel);
-  const loginButton = el('button', 'button button-dark', 'Entrar');
-  loginButton.type = 'submit';
-  loginForm.append(loginButton, el('p', 'form-message', ''));
-  loginForm.lastElementChild.id = 'member-auth-message';
-
-  const registerForm = el('form', 'community-form');
-  registerForm.id = 'member-register-form';
-  registerForm.hidden = true;
-  registerForm.append(inputField('Nombre público', 'displayName', 'text', { autocomplete: 'name', minlength: 2, maxlength: 80 }).label);
-  registerForm.append(inputField('Email', 'email', 'email', { autocomplete: 'email' }).label);
-  const registerPasswordField = inputField('Contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 });
-  registerForm.append(addPasswordVisibilityToggle(registerPasswordField.label));
-  const privacyLabel = el('label', 'community-consent');
-  const privacyCheck = el('input');
-  privacyCheck.type = 'checkbox';
-  privacyCheck.name = 'consent';
-  privacyCheck.required = true;
-  privacyLabel.append(privacyCheck, el('span', '', 'Acepto que mis datos se utilicen para gestionar mi cuenta y mis reservas.'));
-  const registerButton = el('button', 'button button-dark', 'Crear cuenta');
-  registerButton.type = 'submit';
-  registerForm.append(privacyLabel, registerButton, el('p', 'form-message', ''));
-  registerForm.lastElementChild.id = 'member-register-message';
-  authView.append(authTabs, loginForm, registerForm);
-
-  const passwordResetRequestForm = el('form', 'community-form password-recovery-form');
-  passwordResetRequestForm.hidden = true;
-  passwordResetRequestForm.append(el('h3', '', 'Restablecer contraseña'));
-  passwordResetRequestForm.append(inputField('Email de tu cuenta', 'email', 'email', { autocomplete: 'email' }).label);
-  const passwordResetRequestSubmit = el('button', 'button button-dark', 'Enviar enlace');
-  passwordResetRequestSubmit.type = 'submit';
-  const passwordResetRequestMessage = el('p', 'form-message', '');
-  passwordResetRequestMessage.setAttribute('role', 'status');
-  passwordResetRequestForm.append(passwordResetRequestSubmit, passwordResetRequestMessage);
-  const backToLoginButton = el('button', 'text-button', 'Volver a iniciar sesión');
-  backToLoginButton.type = 'button';
-  passwordResetRequestForm.append(backToLoginButton);
-
-  const passwordResetForm = el('form', 'community-form password-recovery-form');
-  passwordResetForm.hidden = true;
-  passwordResetForm.append(el('h3', '', 'Elige una nueva contraseña'));
-  const resetToken = el('input');
-  resetToken.type = 'hidden';
-  resetToken.name = 'token';
-  passwordResetForm.append(resetToken);
-  const newPasswordField = inputField('Nueva contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 });
-  passwordResetForm.append(addPasswordVisibilityToggle(newPasswordField.label));
-  const confirmPasswordField = inputField('Repite la nueva contraseña', 'confirmPassword', 'password', { autocomplete: 'new-password', minlength: 12 });
-  passwordResetForm.append(addPasswordVisibilityToggle(confirmPasswordField.label));
-  const passwordResetSubmit = el('button', 'button button-dark', 'Guardar nueva contraseña');
-  passwordResetSubmit.type = 'submit';
-  const passwordResetMessage = el('p', 'form-message', '');
-  passwordResetMessage.setAttribute('role', 'status');
-  passwordResetForm.append(passwordResetSubmit, passwordResetMessage);
-  passwordResetForm.append(backToLoginButton.cloneNode(true));
-  authView.append(passwordResetRequestForm, passwordResetForm);
+  authView.append(
+    el('p', 'community-auth-description', 'Accede a tu perfil para consultar tus puntos, canjear recompensas y participar en la comunidad.'),
+  );
+  const authActions = el('div', 'community-auth-actions');
+  const loginLink = el('a', 'button button-dark', 'Conectar cuenta');
+  loginLink.href = '/cuenta/entrar/';
+  const registerLink = el('a', 'button button-outline', 'Crear cuenta');
+  registerLink.href = '/cuenta/crear/';
+  authActions.append(loginLink, registerLink);
+  authView.append(authActions);
 
   const profile = el('div', 'community-profile');
   profile.hidden = true;
@@ -619,14 +555,49 @@ function renderCommunity(data) {
   rewardsSection.append(
     el('div', 'community-heading', ''),
     el('h3', '', 'Canjear puntos'),
-    el('p', 'member-rewards-note', 'Los puntos se descuentan al instante y recibirás un código para presentar en el local.'),
+    el('div', 'member-rewards-tabs'),
   );
   rewardsSection.querySelector('.community-heading').append(
     el('p', 'eyebrow', 'RECOMPENSAS'),
   );
+  const rewardsTabs = rewardsSection.querySelector('.member-rewards-tabs');
+  rewardsTabs.setAttribute('role', 'tablist');
+  rewardsTabs.setAttribute('aria-label', 'Recompensas e inventario');
+  const catalogTab = el('button', 'member-rewards-tab is-active', 'Canjear puntos');
+  catalogTab.type = 'button';
+  catalogTab.id = 'member-rewards-catalog-tab';
+  catalogTab.setAttribute('role', 'tab');
+  catalogTab.setAttribute('aria-selected', 'true');
+  catalogTab.setAttribute('aria-controls', 'member-rewards-catalog-panel');
+  const inventoryTab = el('button', 'member-rewards-tab', 'Mi inventario');
+  inventoryTab.type = 'button';
+  inventoryTab.id = 'member-rewards-inventory-tab';
+  inventoryTab.hidden = true;
+  inventoryTab.setAttribute('role', 'tab');
+  inventoryTab.setAttribute('aria-selected', 'false');
+  inventoryTab.setAttribute('aria-controls', 'member-rewards-inventory-panel');
+  rewardsTabs.append(catalogTab, inventoryTab);
+  const catalogPanel = el('div', 'member-rewards-panel');
+  catalogPanel.id = 'member-rewards-catalog-panel';
+  catalogPanel.setAttribute('role', 'tabpanel');
+  catalogPanel.setAttribute('aria-labelledby', catalogTab.id);
+  catalogPanel.append(
+    el('p', 'member-rewards-note', 'Los puntos se descuentan al instante y recibirás un código para presentar en el local.'),
+  );
   const rewardsList = el('div', 'member-rewards-list');
   const redemptionHistory = el('div', 'member-redemption-history');
-  rewardsSection.append(rewardsList, el('h4', '', 'Mis canjes'), redemptionHistory);
+  catalogPanel.append(rewardsList);
+  const inventoryPanel = el('div', 'member-rewards-panel');
+  inventoryPanel.id = 'member-rewards-inventory-panel';
+  inventoryPanel.hidden = true;
+  inventoryPanel.setAttribute('role', 'tabpanel');
+  inventoryPanel.setAttribute('aria-labelledby', inventoryTab.id);
+  inventoryPanel.append(
+    el('p', 'member-rewards-note', 'Consulta el estado de los productos que has canjeado con tus puntos.'),
+    el('h4', '', 'Productos canjeados'),
+    redemptionHistory,
+  );
+  rewardsSection.append(catalogPanel, inventoryPanel);
   account.append(rewardsSection);
 
   const top = el('aside', 'community-top-panel');
@@ -654,6 +625,16 @@ function renderCommunity(data) {
 
   let csrfToken = '';
   let memberPoints = null;
+  const setRewardsTab = (inventorySelected) => {
+    catalogTab.classList.toggle('is-active', !inventorySelected);
+    catalogTab.setAttribute('aria-selected', String(!inventorySelected));
+    inventoryTab.classList.toggle('is-active', inventorySelected);
+    inventoryTab.setAttribute('aria-selected', String(inventorySelected));
+    catalogPanel.hidden = inventorySelected;
+    inventoryPanel.hidden = !inventorySelected;
+  };
+  catalogTab.addEventListener('click', () => setRewardsTab(false));
+  inventoryTab.addEventListener('click', () => setRewardsTab(true));
   const renderRewards = (rewards) => {
     rewardsList.replaceChildren();
     if (!rewards.length) {
@@ -703,15 +684,23 @@ function renderCommunity(data) {
   const renderRedemptions = (redemptions) => {
     redemptionHistory.replaceChildren();
     if (!redemptions.length) {
-      redemptionHistory.append(el('p', 'rank-empty', 'Aún no has canjeado puntos.'));
+      redemptionHistory.append(el('p', 'rank-empty', memberPoints === null
+        ? 'Inicia sesión para consultar tus productos canjeados.'
+        : 'Aún no has canjeado puntos.'));
       return;
     }
+    const statusLabels = {
+      pending: 'Pendiente de entrega',
+      delivered: 'Entregado',
+      returned: 'Devuelto',
+    };
     redemptions.forEach((redemption) => {
       const item = el('article', 'member-redemption');
       item.append(
         el('strong', '', redemption.rewardName),
         el('span', '', `${redemption.pointsCost} puntos · Código ${redemption.redemptionCode}`),
-        el('small', '', 'Presenta este código al personal para recibir tu premio.'),
+        el('span', `member-redemption-status status-${redemption.status}`, statusLabels[redemption.status] ?? 'Estado desconocido'),
+        el('small', '', `Canjeado el ${new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(new Date(`${redemption.createdAt.replace(' ', 'T')}Z`))}`),
       );
       redemptionHistory.append(item);
     });
@@ -727,87 +716,6 @@ function renderCommunity(data) {
   };
   renderRewards(data.rewards ?? []);
   renderRedemptions([]);
-  const resetTokenFromUrl = new URLSearchParams(window.location.search).get('resetToken');
-  const setAuthTab = (register) => {
-    authTabs.hidden = false;
-    loginForm.hidden = register;
-    registerForm.hidden = !register;
-    passwordResetRequestForm.hidden = true;
-    passwordResetForm.hidden = true;
-    loginTab.classList.toggle('is-active', !register);
-    registerTab.classList.toggle('is-active', register);
-  };
-  loginTab.addEventListener('click', () => setAuthTab(false));
-  registerTab.addEventListener('click', () => setAuthTab(true));
-  forgotPasswordButton.addEventListener('click', () => {
-    authTabs.hidden = true;
-    loginForm.hidden = true;
-    registerForm.hidden = true;
-    passwordResetRequestForm.hidden = false;
-    passwordResetRequestForm.elements.email.value = loginForm.elements.email.value;
-    passwordResetRequestMessage.textContent = '';
-  });
-  passwordResetRequestForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    passwordResetRequestMessage.textContent = 'Enviando solicitud…';
-    passwordResetRequestSubmit.disabled = true;
-    try {
-      const response = await fetch('/api/members/password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ email: passwordResetRequestForm.elements.email.value }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'No se pudo solicitar el restablecimiento.');
-      passwordResetRequestMessage.textContent = result.message;
-    } catch (error) {
-      passwordResetRequestMessage.textContent = error.message;
-    } finally {
-      passwordResetRequestSubmit.disabled = false;
-    }
-  });
-  passwordResetForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const values = Object.fromEntries(new FormData(passwordResetForm).entries());
-    if (values.password !== values.confirmPassword) {
-      passwordResetMessage.textContent = 'Las contraseñas nuevas no coinciden.';
-      return;
-    }
-    passwordResetMessage.textContent = 'Guardando nueva contraseña…';
-    passwordResetSubmit.disabled = true;
-    try {
-      const response = await fetch('/api/members/password-reset/confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ token: values.token, password: values.password }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'No se pudo restablecer la contraseña.');
-      passwordResetForm.reset();
-      setAuthTab(false);
-      document.querySelector('#member-auth-message').textContent = 'Contraseña restablecida. Ya puedes iniciar sesión.';
-      window.history.replaceState(null, '', `${window.location.pathname}#cuenta`);
-    } catch (error) {
-      passwordResetMessage.textContent = error.message;
-    } finally {
-      passwordResetSubmit.disabled = false;
-    }
-  });
-  passwordResetRequestForm.querySelector('.text-button').addEventListener('click', () => setAuthTab(false));
-  passwordResetForm.querySelector('.text-button').addEventListener('click', () => setAuthTab(false));
-
-  if (resetTokenFromUrl) {
-    resetToken.value = resetTokenFromUrl;
-    authTabs.hidden = true;
-    loginForm.hidden = true;
-    registerForm.hidden = true;
-    passwordResetRequestForm.hidden = true;
-    passwordResetForm.hidden = false;
-    window.history.replaceState(null, '', `${window.location.pathname}#cuenta`);
-    account.scrollIntoView({ block: 'start' });
-  }
 
   const loadModeration = async () => {
     const response = await fetch('/api/members/ideas', { credentials: 'same-origin' });
@@ -819,6 +727,7 @@ function renderCommunity(data) {
   const showMember = (member) => {
     authView.hidden = true;
     profile.hidden = false;
+    inventoryTab.hidden = false;
     ideaForm.hidden = false;
     profileHeader.querySelector('.profile-name').replaceChildren(el('strong', '', member.displayName), el('span', '', member.role));
     document.querySelector('#member-points').textContent = String(member.points);
@@ -829,58 +738,6 @@ function renderCommunity(data) {
     moderation.hidden = !isModerator;
     moderatorTools.hidden = !isModerator;
   };
-
-  loginForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const message = document.querySelector('#member-auth-message');
-    message.textContent = 'Iniciando sesión…';
-    const credentials = Object.fromEntries(new FormData(loginForm).entries());
-    credentials.rememberMe = loginForm.elements.rememberMe.checked;
-    try {
-      const response = await fetch('/api/members/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(credentials),
-      });
-      const result = await response.json();
-      if (result.status === 'banned') {
-        renderMemberBanGate(result.member, result.csrfToken, result.appeal);
-        return;
-      }
-      if (!response.ok) throw new Error(result.error ?? 'No se pudo iniciar sesión.');
-      csrfToken = result.csrfToken;
-      showMember(result.member);
-      await loadMemberRewards();
-      await syncMemberAccessLink(document.querySelector('.nav-account'));
-    } catch (error) {
-      message.textContent = error.message;
-    }
-  });
-
-  registerForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const message = document.querySelector('#member-register-message');
-    message.textContent = 'Creando cuenta…';
-    const values = Object.fromEntries(new FormData(registerForm).entries());
-    values.consent = registerForm.elements.consent.checked;
-    try {
-      const response = await fetch('/api/members/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(values),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'No se pudo crear la cuenta.');
-      csrfToken = result.csrfToken;
-      showMember(result.member);
-      await loadMemberRewards();
-      await syncMemberAccessLink(document.querySelector('.nav-account'));
-    } catch (error) {
-      message.textContent = error.message;
-    }
-  });
 
   profileForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -968,19 +825,230 @@ function renderCommunity(data) {
       ideaForm.hidden = true;
       authView.hidden = false;
       memberPoints = null;
+      inventoryTab.hidden = true;
+      setRewardsTab(false);
       renderRewards(data.rewards ?? []);
       renderRedemptions([]);
       await syncMemberAccessLink(document.querySelector('.nav-account'));
     }
   });
 
-  if (!resetTokenFromUrl) {
-    fetch('/api/members/session', { credentials: 'same-origin' }).then(async (response) => {
-      if (!response.ok) return;
+  fetch('/api/members/session', { credentials: 'same-origin' }).then(async (response) => {
+    if (!response.ok) return;
+    const result = await response.json();
+    csrfToken = result.csrfToken;
+    showMember(result.member);
+    await loadMemberRewards();
+  }).catch(() => {});
+}
+
+function renderMemberAuth(register) {
+  const main = document.querySelector('#page-content');
+  const heading = register
+    ? { number: '01', eyebrow: 'TU CUENTA', title: 'Forma parte de ', accent: 'la comunidad.', description: 'Crea tu cuenta para sumar puntos en tus sesiones, canjear recompensas y compartir tus ideas.' }
+    : { number: '01', eyebrow: 'TU CUENTA', title: 'Qué bueno verte ', accent: 'de nuevo.', description: 'Inicia sesión para consultar tus puntos, gestionar tu inventario y seguir participando.' };
+  main.append(pageHeading(heading));
+
+  const section = el('section', 'page-content-section member-auth-section');
+  const card = el('div', 'member-auth-card');
+  card.append(el('p', 'eyebrow', register ? 'CREAR CUENTA' : 'CONECTAR CUENTA'));
+  const formHeading = el('h2', '', register ? 'Empieza a sumar.' : 'Accede a tu perfil.');
+  card.append(formHeading);
+  const form = el('form', 'community-form member-auth-form');
+  const message = el('p', 'form-message member-auth-message', '');
+  message.setAttribute('role', 'status');
+  message.setAttribute('aria-live', 'polite');
+
+  if (register) {
+    form.append(inputField('Nombre público', 'displayName', 'text', { autocomplete: 'name', minlength: 2, maxlength: 80 }).label);
+    form.append(inputField('Email', 'email', 'email', { autocomplete: 'email' }).label);
+    const password = inputField('Contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 });
+    form.append(addPasswordVisibilityToggle(password.label));
+    const privacy = el('label', 'community-consent');
+    const consent = el('input');
+    consent.type = 'checkbox';
+    consent.name = 'consent';
+    consent.required = true;
+    privacy.append(consent, el('span', '', 'Acepto que mis datos se utilicen para gestionar mi cuenta y mis reservas.'));
+    form.append(privacy);
+  } else {
+    form.append(inputField('Email', 'email', 'email', { autocomplete: 'email' }).label);
+    const password = inputField('Contraseña', 'password', 'password', { autocomplete: 'current-password' });
+    form.append(addPasswordVisibilityToggle(password.label));
+    const forgotPassword = el('button', 'text-button password-forgot-link', '¿Has olvidado tu contraseña?');
+    forgotPassword.type = 'button';
+    form.append(forgotPassword);
+    const rememberLabel = el('label', 'community-consent remember-member-row');
+    const remember = el('input');
+    remember.type = 'checkbox';
+    remember.name = 'rememberMe';
+    rememberLabel.append(remember, el('span', '', 'Recordarme en este dispositivo durante 30 días'));
+    form.append(rememberLabel);
+  }
+
+  const submit = el('button', 'button button-dark', register ? 'Crear cuenta' : 'Iniciar sesión');
+  submit.type = 'submit';
+  form.append(submit, message);
+
+  const switchLink = el('a', 'member-auth-switch', register ? '¿Ya tienes una cuenta? Inicia sesión' : '¿Aún no tienes cuenta? Regístrate');
+  switchLink.href = register ? '/cuenta/entrar/' : '/cuenta/crear/';
+  card.append(form, switchLink);
+
+  let resetRequestForm;
+  let resetForm;
+  const tokenFromUrl = !register ? new URLSearchParams(window.location.search).get('resetToken') : null;
+  if (!register) {
+    resetRequestForm = el('form', 'community-form password-recovery-form');
+    resetRequestForm.hidden = true;
+    resetRequestForm.append(el('h3', '', 'Restablecer contraseña'));
+    resetRequestForm.append(inputField('Email de tu cuenta', 'email', 'email', { autocomplete: 'email' }).label);
+    const requestSubmit = el('button', 'button button-dark', 'Enviar enlace');
+    requestSubmit.type = 'submit';
+    const requestMessage = el('p', 'form-message', '');
+    requestMessage.setAttribute('role', 'status');
+    resetRequestForm.append(requestSubmit, requestMessage);
+    const backToLogin = el('button', 'text-button', 'Volver a iniciar sesión');
+    backToLogin.type = 'button';
+    resetRequestForm.append(backToLogin);
+
+    resetForm = el('form', 'community-form password-recovery-form');
+    resetForm.hidden = true;
+    resetForm.append(el('h3', '', 'Elige una nueva contraseña'));
+    const resetToken = el('input');
+    resetToken.type = 'hidden';
+    resetToken.name = 'token';
+    resetForm.append(resetToken);
+    const newPassword = inputField('Nueva contraseña · mínimo 12 caracteres', 'password', 'password', { autocomplete: 'new-password', minlength: 12 });
+    resetForm.append(addPasswordVisibilityToggle(newPassword.label));
+    const confirmPassword = inputField('Repite la nueva contraseña', 'confirmPassword', 'password', { autocomplete: 'new-password', minlength: 12 });
+    resetForm.append(addPasswordVisibilityToggle(confirmPassword.label));
+    const resetSubmit = el('button', 'button button-dark', 'Guardar nueva contraseña');
+    resetSubmit.type = 'submit';
+    const resetMessage = el('p', 'form-message', '');
+    resetMessage.setAttribute('role', 'status');
+    resetForm.append(resetSubmit, resetMessage);
+    const resetBackToLogin = el('button', 'text-button', 'Volver a iniciar sesión');
+    resetBackToLogin.type = 'button';
+    resetForm.append(resetBackToLogin);
+    card.append(resetRequestForm, resetForm);
+
+    const showLogin = (successMessage = '') => {
+      form.hidden = false;
+      switchLink.hidden = false;
+      resetRequestForm.hidden = true;
+      resetForm.hidden = true;
+      message.textContent = successMessage;
+    };
+    form.querySelector('.password-forgot-link').addEventListener('click', () => {
+      form.hidden = true;
+      switchLink.hidden = true;
+      resetRequestForm.hidden = false;
+      resetRequestForm.elements.email.value = form.elements.email.value;
+      resetRequestForm.querySelector('[role="status"]').textContent = '';
+    });
+    resetRequestForm.querySelector('.text-button').addEventListener('click', () => showLogin());
+    resetForm.querySelector('.text-button').addEventListener('click', () => showLogin());
+    resetRequestForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const requestMessage = resetRequestForm.querySelector('[role="status"]');
+      const requestSubmit = resetRequestForm.querySelector('button[type="submit"]');
+      requestMessage.textContent = 'Enviando solicitud…';
+      requestSubmit.disabled = true;
+      try {
+        const response = await fetch('/api/members/password-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email: resetRequestForm.elements.email.value }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? 'No se pudo solicitar el restablecimiento.');
+        requestMessage.textContent = result.message;
+      } catch (error) {
+        requestMessage.textContent = error.message;
+      } finally {
+        requestSubmit.disabled = false;
+      }
+    });
+    resetForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(resetForm).entries());
+      const resetMessage = resetForm.querySelector('[role="status"]');
+      const resetSubmit = resetForm.querySelector('button[type="submit"]');
+      if (values.password !== values.confirmPassword) {
+        resetMessage.textContent = 'Las contraseñas nuevas no coinciden.';
+        return;
+      }
+      resetMessage.textContent = 'Guardando nueva contraseña…';
+      resetSubmit.disabled = true;
+      try {
+        const response = await fetch('/api/members/password-reset/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ token: values.token, password: values.password }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? 'No se pudo restablecer la contraseña.');
+        resetForm.reset();
+        showLogin('Contraseña restablecida. Ya puedes iniciar sesión.');
+        window.history.replaceState(null, '', window.location.pathname);
+      } catch (error) {
+        resetMessage.textContent = error.message;
+      } finally {
+        resetSubmit.disabled = false;
+      }
+    });
+
+    if (tokenFromUrl) {
+      resetForm.elements.token.value = tokenFromUrl;
+      form.hidden = true;
+      switchLink.hidden = true;
+      resetRequestForm.hidden = true;
+      resetForm.hidden = false;
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(form).entries());
+    if (register) values.consent = form.elements.consent.checked;
+    if (!register) values.rememberMe = form.elements.rememberMe.checked;
+    submit.disabled = true;
+    submit.textContent = register ? 'Creando cuenta…' : 'Iniciando sesión…';
+    message.textContent = '';
+    try {
+      const response = await fetch(register ? '/api/members/register' : '/api/members/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(values),
+      });
       const result = await response.json();
-      csrfToken = result.csrfToken;
-      showMember(result.member);
-      await loadMemberRewards();
+      if (result.status === 'banned') {
+        renderMemberBanGate(result.member, result.csrfToken, result.appeal);
+        return;
+      }
+      if (!response.ok) throw new Error(result.error ?? (register ? 'No se pudo crear la cuenta.' : 'No se pudo iniciar sesión.'));
+      submit.textContent = register ? 'Cuenta creada' : 'Sesión iniciada';
+      message.textContent = register ? 'Cuenta creada correctamente. Abriendo tu perfil…' : 'Sesión iniciada. Abriendo tu perfil…';
+      window.setTimeout(() => window.location.assign('/comunidad/#cuenta'), 700);
+    } catch (error) {
+      message.textContent = error.message;
+      submit.disabled = false;
+      submit.textContent = register ? 'Crear cuenta' : 'Iniciar sesión';
+    }
+  });
+
+  const layout = el('div', 'page-width member-auth-layout');
+  layout.append(card);
+  section.append(layout);
+  main.append(section);
+
+  if (!tokenFromUrl) {
+    fetch('/api/members/session', { credentials: 'same-origin' }).then((response) => {
+      if (response.ok) window.location.replace('/comunidad/#cuenta');
     }).catch(() => {});
   }
 }
@@ -1289,7 +1357,10 @@ function renderVenue(data) {
 }
 
 function updateMetadata(business, page) {
-  const label = navigationItems.find((item) => item.page === page)?.label ?? 'Local Gaming';
+  const label = {
+    memberLogin: 'Iniciar sesión',
+    memberRegister: 'Crear cuenta',
+  }[page] ?? navigationItems.find((item) => item.page === page)?.label ?? 'Local Gaming';
   document.title = `${label} | ${business.name}`;
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', `${label} del local gaming ${business.name}.`);
@@ -1329,6 +1400,8 @@ async function start() {
     tournaments: renderTournaments,
     news: renderNews,
     community: renderCommunity,
+    memberLogin: () => renderMemberAuth(false),
+    memberRegister: () => renderMemberAuth(true),
     booking: renderBooking,
     venue: renderVenue,
   };

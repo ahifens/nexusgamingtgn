@@ -262,6 +262,7 @@ describe('cuentas, puntos y sugerencias', () => {
 
       const resetUrl = new URL(resetEmail.resetUrl);
       expect(resetUrl.origin).toBe('https://gaming.example.test');
+      expect(resetUrl.pathname).toBe('/cuenta/entrar/');
       const token = resetUrl.searchParams.get('resetToken');
       expect(token).toBeTruthy();
       const storedToken = database.prepare('SELECT token_hash AS tokenHash FROM member_password_resets').get();
@@ -377,7 +378,10 @@ describe('cuentas, puntos y sugerencias', () => {
     const after = await request('/api/members/rewards', { cookie });
     expect(after.data.points).toBe(250);
     expect(after.data.redemptions).toHaveLength(1);
-    expect(after.data.redemptions[0].redemptionCode).toBe(redemption.data.redemption.redemptionCode);
+    expect(after.data.redemptions[0]).toMatchObject({
+      redemptionCode: redemption.data.redemption.redemptionCode,
+      status: 'pending',
+    });
 
     const outOfStock = await request(`/api/members/rewards/${drink.id}/redeem`, {
       method: 'POST',
