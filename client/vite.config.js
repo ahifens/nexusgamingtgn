@@ -10,6 +10,9 @@ const newsPage = fileURLToPath(new URL('./noticias/index.html', import.meta.url)
 const bookingPage = fileURLToPath(new URL('./reservar/index.html', import.meta.url));
 const venuePage = fileURLToPath(new URL('./local/index.html', import.meta.url));
 const communityPage = fileURLToPath(new URL('./comunidad/index.html', import.meta.url));
+const memberLoginPage = fileURLToPath(new URL('./cuenta/entrar/index.html', import.meta.url));
+const memberRegisterPage = fileURLToPath(new URL('./cuenta/crear/index.html', import.meta.url));
+const rankingPage = fileURLToPath(new URL('./ranking/index.html', import.meta.url));
 
 export default defineConfig({
   root: 'client',
@@ -30,10 +33,13 @@ export default defineConfig({
         services: servicePage,
         rates: ratesPage,
         tournaments: tournamentsPage,
+        ranking: rankingPage,
         news: newsPage,
         booking: bookingPage,
         venue: venuePage,
         community: communityPage,
+        memberLogin: memberLoginPage,
+        memberRegister: memberRegisterPage,
       },
     },
   },

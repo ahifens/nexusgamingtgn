@@ -185,5 +185,39 @@ describe('panel de noticias', () => {
 
     const community = await jsonRequest('/api/public');
     expect(community.data.topSpenders[0]).toMatchObject({ displayName: 'Cliente Panel', points: 100 });
+
+    const rewardId = database.prepare("SELECT id FROM member_rewards WHERE name = 'Bebida sin alcohol'").get().id;
+    const redemptionId = database.prepare(`
+      INSERT INTO member_reward_redemptions
+        (member_id, reward_id, reward_name, points_cost, redemption_code)
+      VALUES (?, ?, 'Bebida sin alcohol', 250, 'ADMINTEST01')
+    `).run(publicMember.id, rewardId).lastInsertRowid;
+    const inventory = await jsonRequest('/api/admin/rewards', { cookie: staffCookie });
+    expect(inventory.data.redemptions).toEqual([
+      expect.objectContaining({
+        id: redemptionId,
+        memberName: 'Cliente Panel',
+        status: 'pending',
+      }),
+    ]);
+    const delivered = await jsonRequest(`/api/admin/redemptions/${redemptionId}`, {
+      method: 'PATCH',
+      cookie: staffCookie,
+      csrfToken: staffCsrf,
+      body: { status: 'delivered' },
+    });
+    expect(delivered.data).toEqual({ id: redemptionId, status: 'delivered' });
+    const memberInventory = await jsonRequest('/api/members/rewards', { cookie: memberCookie });
+    expect(memberInventory.data.redemptions).toEqual([
+      expect.objectContaining({ id: redemptionId, status: 'delivered' }),
+    ]);
+    const invalidStatus = await jsonRequest(`/api/admin/redemptions/${redemptionId}`, {
+      method: 'PATCH',
+      cookie: staffCookie,
+      csrfToken: staffCsrf,
+      body: { status: 'in_transit' },
+    });
+    expect(invalidStatus.response.status).toBe(400);
+
   });
 });

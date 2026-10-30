@@ -1,4 +1,5 @@
 import './nexus.css';
+import './page-transitions.css';
 import { serviceVisuals, weekdayNames } from './config/business.js';
 import { enforceMemberBanGate, renderMemberBanGate, syncMemberAccessLink } from './member-gate.js';
 
@@ -233,46 +234,6 @@ function fillAccount(member) {
 }
 
 async function initCommunity() {
-  const login = document.querySelector('#clientLoginForm');
-  const register = document.querySelector('#clientRegisterForm');
-  login.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const values = Object.fromEntries(new FormData(login).entries());
-    values.rememberMe = login.elements.rememberMe.checked;
-    const message = document.querySelector('#clientLoginMessage');
-    message.textContent = 'Iniciando sesión…';
-    try {
-      const { response, data } = await jsonRequest('/api/members/login', { method: 'POST', body: values });
-      if (data.status === 'banned') {
-        renderMemberBanGate(data.member, data.csrfToken, data.appeal);
-        return;
-      }
-      if (!response.ok) throw new Error(data.error ?? 'No se pudo iniciar sesión.');
-      csrfToken = data.csrfToken;
-      fillAccount(data.member);
-      await syncMemberAccessLink(document.querySelector('#member-access-link'));
-    } catch (error) {
-      message.textContent = error.message;
-    }
-  });
-
-  register.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const values = Object.fromEntries(new FormData(register).entries());
-    values.consent = register.elements.consent.checked;
-    const message = document.querySelector('#clientRegisterMessage');
-    message.textContent = 'Creando cuenta…';
-    try {
-      const { response, data } = await jsonRequest('/api/members/register', { method: 'POST', body: values });
-      if (!response.ok) throw new Error(data.error ?? 'No se pudo crear la cuenta.');
-      csrfToken = data.csrfToken;
-      fillAccount(data.member);
-      await syncMemberAccessLink(document.querySelector('#member-access-link'));
-    } catch (error) {
-      message.textContent = error.message;
-    }
-  });
-
   document.querySelector('#clientLogout').addEventListener('click', async () => {
     try {
       await jsonRequest('/api/members/logout', { method: 'POST', csrf: true });

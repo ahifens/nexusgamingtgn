@@ -18,7 +18,7 @@ npm run dev
 
 La web estará en `http://127.0.0.1:5173` y la API en `http://127.0.0.1:3000`.
 
-Rutas públicas: `/`, `/servicios/`, `/tarifas/`, `/torneos/`, `/noticias/`, `/comunidad/`, `/local/` y `/reservar/`. El panel del personal está en `/admin/`.
+Rutas públicas: `/`, `/servicios/`, `/tarifas/`, `/torneos/`, `/ranking/`, `/noticias/`, `/comunidad/`, `/cuenta/entrar/`, `/cuenta/crear/`, `/local/` y `/reservar/`. Cada sección principal tiene una página propia; los navegadores compatibles muestran una transición breve entre páginas. El panel del personal está en `/admin/`.
 
 ## Scripts
 
@@ -42,7 +42,9 @@ Para habilitar el restablecimiento de contraseñas de miembros, configura `PUBLI
 
 Las cuentas acumulan 10 puntos por cada euro de reservas completadas. En Comunidad pueden canjearlos al instante por recompensas del catálogo; cada canje descuenta puntos, reduce el stock y genera un código personal para presentar en el local. El catálogo inicial incluye ejemplos editables desde la pestaña «Recompensas» del panel de administración. Los puntos disponibles nunca bajan de cero.
 
-Para crear un administrador aleatorio, ejecuta `npm run admin:create` y guarda las credenciales que imprime: la contraseña no se almacena en claro y no puede recuperarse después. También puedes configurar `ADMIN_USERNAME` y `ADMIN_PASSWORD` en `.env` y ejecutar `npm run db:setup`; exige 12 caracteres o más. En desarrollo se permite `admin/admin` solo como clave bootstrap, con cambio obligatorio en el primer acceso; no se permite en producción. El hash se genera con bcrypt y la sesión utiliza cookies `httpOnly` más token CSRF. En producción, sirve el sitio exclusivamente por HTTPS.
+Para crear un administrador aleatorio en un entorno con acceso a consola, ejecuta `npm run admin:create` y guarda las credenciales que imprime. En producción sin consola (por ejemplo, Render gratuito), configura `ADMIN_USERNAME` y `ADMIN_PASSWORD` en las variables de entorno del servicio y vuelve a desplegar: al arrancar, el servidor crea esa cuenta solo si el nombre aún no existe. Usa una contraseña de al menos 12 caracteres. Después puedes cambiarla desde el panel; el arranque no la sobrescribe. No configures estas variables con credenciales débiles ni las publiques. En desarrollo se permite `admin/admin` solo como clave bootstrap, con cambio obligatorio en el primer acceso; no se permite en producción. El hash se genera con bcrypt y la sesión utiliza cookies `httpOnly` más token CSRF. En producción, sirve el sitio exclusivamente por HTTPS.
+
+Render gratuito no ofrece disco persistente para el servicio web: la base de datos SQLite local puede perderse al desplegar de nuevo o reiniciar. Si ocurre, mientras las variables `ADMIN_USERNAME` y `ADMIN_PASSWORD` sigan configuradas, el servidor volverá a crear el administrador al arrancar; el resto de datos SQLite también puede perderse.
 
 ## Datos de demostración
 

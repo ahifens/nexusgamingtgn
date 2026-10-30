@@ -119,6 +119,7 @@ export async function enforceMemberBanGate() {
 export async function syncMemberAccessLink(link) {
   if (!link) return;
   link.textContent = 'Entrar / registrarse';
+  link.href = '/cuenta/entrar/';
   link.removeAttribute('aria-label');
   link.onclick = null;
 

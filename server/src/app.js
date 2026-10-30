@@ -262,6 +262,7 @@ export function createApp(database, { sendResetEmail } = {}) {
     response.json({ members });
   });
   app.get('/api/admin/rewards', auth.requireStaff, auth.requireAdministrator, memberAuth.listRewardsForAdmin);
+  app.patch('/api/admin/redemptions/:id', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, memberAuth.updateRedemptionStatus);
   app.post('/api/admin/rewards', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, memberAuth.createReward);
   app.put('/api/admin/rewards/:id', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, memberAuth.updateReward);
   app.put('/api/admin/members/:id/role', auth.requireStaff, auth.requireCsrf, auth.requireAdministrator, (request, response) => {

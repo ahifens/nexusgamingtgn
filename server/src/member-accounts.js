@@ -53,6 +53,9 @@ const rewardSchema = z.object({
   stock: z.number().int().min(0).nullable(),
   active: z.boolean(),
 });
+const redemptionStatusSchema = z.object({
+  status: z.enum(['pending', 'delivered', 'returned']),
+});
 const appealSchema = z.object({
   reason: z.string().trim().min(30).max(2000),
 });
@@ -372,7 +375,7 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
     const rewards = availableMemberRewards(database);
     const redemptions = database.prepare(`
       SELECT id, reward_name AS rewardName, points_cost AS pointsCost,
-        redemption_code AS redemptionCode, created_at AS createdAt
+        redemption_code AS redemptionCode, status, created_at AS createdAt
       FROM member_reward_redemptions
       WHERE member_id = ?
       ORDER BY created_at DESC, id DESC
@@ -526,8 +529,9 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
             created_at = CURRENT_TIMESTAMP
         `).run(account.id, digest(token), expiresAt);
         const accountResetUrl = new URL(resetUrl);
+        accountResetUrl.pathname = '/cuenta/entrar/';
         accountResetUrl.searchParams.set('resetToken', token);
-        accountResetUrl.hash = 'cuenta';
+        accountResetUrl.hash = '';
 
         try {
           await sendResetEmail({
@@ -630,7 +634,30 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
       FROM member_rewards
       ORDER BY active DESC, points_cost, id
     `).all().map((reward) => ({ ...reward, active: Boolean(reward.active) }));
-    return response.json({ rewards });
+    const redemptions = database.prepare(`
+      SELECT redemptions.id, redemptions.reward_name AS rewardName,
+        redemptions.points_cost AS pointsCost, redemptions.redemption_code AS redemptionCode,
+        redemptions.status, redemptions.created_at AS createdAt,
+        members.display_name AS memberName, members.email AS memberEmail
+      FROM member_reward_redemptions AS redemptions
+      JOIN members ON members.id = redemptions.member_id
+      ORDER BY CASE redemptions.status WHEN 'pending' THEN 0 ELSE 1 END,
+        redemptions.created_at DESC, redemptions.id DESC
+    `).all();
+    return response.json({ rewards, redemptions });
+  }
+
+  function updateRedemptionStatus(request, response) {
+    const id = Number(request.params.id);
+    const parsed = redemptionStatusSchema.safeParse(request.body);
+    if (!Number.isSafeInteger(id) || id < 1 || !parsed.success) {
+      return response.status(400).json({ error: 'El estado del canje no es válido.' });
+    }
+    const result = database.prepare(`
+      UPDATE member_reward_redemptions SET status = ? WHERE id = ?
+    `).run(parsed.data.status, id);
+    if (!result.changes) return response.status(404).json({ error: 'No encontramos ese canje.' });
+    return response.json({ id, status: parsed.data.status });
   }
 
   function createReward(request, response) {
@@ -691,6 +718,7 @@ export function createMemberAuth(database, { sendResetEmail = sendPasswordResetE
     listMemberIdeas,
     moderateIdea,
     listRewardsForAdmin,
+    updateRedemptionStatus,
     createReward,
     updateReward,
   };

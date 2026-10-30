@@ -97,6 +97,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .waitlist-entry { margin: 6px 0; color: var(--admin-muted); font-size: 11px; }
 .admin-tab-panel > .access-note { margin: 0 0 18px; padding: 0; border: 0; }
 .admin-tab-panel .admin-news-actions select { max-width: 150px; }
+.redemption-admin-heading { margin: 32px 0 4px; padding-top: 20px; border-top: 1px solid var(--admin-line); font-size: 17px; }
+.redemption-status-select { width: min(100%, 190px); min-height: 38px; padding: 6px 8px; border: 1px solid #4b4c45; border-radius: 0; color: var(--admin-paper); background: #1a1b17; font-size: 10px; }
+.redemption-status-select:disabled { opacity: .6; }
+.status-pending { color: #e0d5f1; background: #392b50; }
+.status-delivered { color: #c1e3c9; background: #24402e; }
+.status-returned { color: #ffc0b5; background: #522b27; }
 .admin-tab-panel .admin-news-row { align-items: center; }
 
 @media (max-width: 760px) {

@@ -45,6 +45,7 @@ export function setupAdminManagement({ csrfToken, role }) {
   const reservationsList = document.querySelector('#admin-reservation-list');
   const membersList = document.querySelector('#admin-member-list');
   const rewardsList = document.querySelector('#admin-reward-list');
+  const redemptionsList = document.querySelector('#admin-redemption-list');
   const rewardForm = document.querySelector('#reward-form');
   const rewardMessage = document.querySelector('#reward-message');
   const ideasList = document.querySelector('#admin-idea-list');
@@ -336,8 +337,9 @@ export function setupAdminManagement({ csrfToken, role }) {
 
   async function loadRewards() {
     rewardsList.replaceChildren(node('p', 'list-loading', 'Cargando recompensas…'));
+    redemptionsList.replaceChildren(node('p', 'list-loading', 'Cargando canjes…'));
     try {
-      const { rewards } = await api('/api/admin/rewards');
+      const { rewards, redemptions } = await api('/api/admin/rewards');
       rewardsList.replaceChildren();
       if (!rewards.length) rewardsList.append(node('p', 'list-empty', 'Todavía no hay recompensas.'));
       rewards.forEach((reward) => {
@@ -367,9 +369,63 @@ export function setupAdminManagement({ csrfToken, role }) {
         row.append(info, actions);
         rewardsList.append(row);
       });
+      renderAdminRedemptions(redemptions);
     } catch (error) {
       rewardsList.replaceChildren(node('p', 'list-empty', error.message));
+      redemptionsList.replaceChildren(node('p', 'list-empty', error.message));
     }
+  }
+
+  function renderAdminRedemptions(redemptions) {
+    redemptionsList.replaceChildren();
+    if (!redemptions.length) {
+      redemptionsList.append(node('p', 'list-empty', 'Todavía no hay productos canjeados.'));
+      return;
+    }
+    const statusLabels = {
+      pending: 'Pendiente de entrega',
+      delivered: 'Entregado',
+      returned: 'Devuelto',
+    };
+    redemptions.forEach((redemption) => {
+      const row = node('article', 'admin-news-row');
+      const info = node('div', 'admin-news-headline');
+      info.append(
+        node('span', `status-label status-${redemption.status}`, statusLabels[redemption.status] ?? 'Estado desconocido'),
+        node('h3', '', redemption.rewardName),
+        node('p', '', `${redemption.memberName} · ${redemption.memberEmail}`),
+        node('p', '', `${redemption.pointsCost} puntos · Código ${redemption.redemptionCode}`),
+      );
+      const status = document.createElement('select');
+      status.className = 'redemption-status-select';
+      status.setAttribute('aria-label', `Estado de ${redemption.rewardName} para ${redemption.memberName}`);
+      Object.entries(statusLabels).forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        status.append(option);
+      });
+      status.value = redemption.status;
+      status.addEventListener('change', async () => {
+        const previousStatus = redemption.status;
+        status.disabled = true;
+        try {
+          await api(`/api/admin/redemptions/${redemption.id}`, {
+            method: 'PATCH',
+            body: { status: status.value },
+            csrfToken,
+          });
+          await loadRewards();
+        } catch (error) {
+          status.value = previousStatus;
+          info.append(node('p', 'form-message', error.message));
+        } finally {
+          status.disabled = false;
+        }
+      });
+      row.append(info, status);
+      redemptionsList.append(row);
+    });
   }
 
   rewardForm.addEventListener('submit', async (event) => {
