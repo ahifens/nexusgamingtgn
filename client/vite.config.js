@@ -12,7 +12,10 @@ const venuePage = fileURLToPath(new URL('./local/index.html', import.meta.url));
 const communityPage = fileURLToPath(new URL('./comunidad/index.html', import.meta.url));
 const memberLoginPage = fileURLToPath(new URL('./cuenta/entrar/index.html', import.meta.url));
 const memberRegisterPage = fileURLToPath(new URL('./cuenta/crear/index.html', import.meta.url));
+<<<<<<< HEAD
 const rankingPage = fileURLToPath(new URL('./ranking/index.html', import.meta.url));
+=======
+>>>>>>> 5af4803bddf206bce0207b8407ed54ec08bf7358
 
 export default defineConfig({
   root: 'client',

@@ -18,7 +18,11 @@ npm run dev
 
 La web estará en `http://127.0.0.1:5173` y la API en `http://127.0.0.1:3000`.
 
+<<<<<<< HEAD
 Rutas públicas: `/`, `/servicios/`, `/tarifas/`, `/torneos/`, `/ranking/`, `/noticias/`, `/comunidad/`, `/cuenta/entrar/`, `/cuenta/crear/`, `/local/` y `/reservar/`. Cada sección principal tiene una página propia; los navegadores compatibles muestran una transición breve entre páginas. El panel del personal está en `/admin/`.
+=======
+Rutas públicas: `/`, `/servicios/`, `/tarifas/`, `/torneos/`, `/noticias/`, `/comunidad/`, `/cuenta/entrar/`, `/cuenta/crear/`, `/local/` y `/reservar/`. El panel del personal está en `/admin/`.
+>>>>>>> 5af4803bddf206bce0207b8407ed54ec08bf7358
 
 ## Scripts
 
